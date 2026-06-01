@@ -96,3 +96,23 @@ export function ContextMenu() {
     </AnimatePresence>
   )
 }
+
+export function DesktopContextMenu({ children }: { children: React.ReactNode }) {
+  const { setContextMenu } = useDesktopStore()
+  
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setContextMenu({ x: e.clientX, y: e.clientY })
+  }
+  
+  const handleClick = () => {
+    setContextMenu(null)
+  }
+  
+  return (
+    <div onContextMenu={handleContextMenu} onClick={handleClick} className="contents">
+      {children}
+      <ContextMenu />
+    </div>
+  )
+}

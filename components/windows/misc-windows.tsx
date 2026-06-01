@@ -78,3 +78,62 @@ export function FinderWindow() {
     </div>
   )
 }
+
+export function SettingsWindow() {
+  return (
+    <div className="h-full p-6">
+      <div className="grid grid-cols-4 gap-6">
+        {[
+          { icon: '🌐', label: 'Network' },
+          { icon: '🔊', label: 'Sound' },
+          { icon: '🔋', label: 'Battery' },
+          { icon: '🖥️', label: 'Display' },
+          { icon: '⌨️', label: 'Keyboard' },
+          { icon: '🖱️', label: 'Mouse' },
+          { icon: '🔒', label: 'Security' },
+          { icon: '👤', label: 'Users' },
+        ].map((item) => (
+          <button
+            key={item.label}
+            className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+          >
+            <div className="text-4xl">{item.icon}</div>
+            <span className="text-[#e8e8f0] text-sm">{item.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export function TerminalWindow() {
+  const commands = [
+    { prompt: '~', cmd: 'whoami', output: 'soufyane' },
+    { prompt: '~', cmd: 'cat skills.txt', output: 'React, TypeScript, Node.js, Python...' },
+    { prompt: '~', cmd: 'ls projects/', output: 'macos-portfolio/  e-commerce/  dashboard/' },
+    { prompt: '~', cmd: '', output: '' },
+  ]
+  
+  return (
+    <div className="h-full bg-[rgba(0,0,0,0.6)] p-4 font-mono text-sm overflow-y-auto">
+      <div className="text-[#00ff00] mb-4">
+        Last login: {new Date().toLocaleString()} on ttys000
+      </div>
+      {commands.map((line, i) => (
+        <div key={i} className="mb-2">
+          <div className="flex gap-2">
+            <span className="text-[#00f0ff]">soufyane@portfolio</span>
+            <span className="text-[#7b2fff]">{line.prompt}</span>
+            <span className="text-[#e8e8f0]">$ {line.cmd}</span>
+            {i === commands.length - 1 && (
+              <span className="animate-pulse text-[#00f0ff]">▋</span>
+            )}
+          </div>
+          {line.output && (
+            <div className="text-[#8888aa] mt-1 ml-0">{line.output}</div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}

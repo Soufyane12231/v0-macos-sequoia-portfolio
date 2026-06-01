@@ -2,16 +2,15 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence, useDragControls } from 'framer-motion'
-import { useDesktopStore, WindowId } from '@/lib/desktop-store'
+import { useDesktopStore, WindowState } from '@/lib/desktop-store'
 
 interface WindowFrameProps {
-  id: WindowId
+  window: WindowState
   children: React.ReactNode
 }
 
-export function WindowFrame({ id, children }: WindowFrameProps) {
+export function WindowFrame({ window, children }: WindowFrameProps) {
   const {
-    windows,
     activeWindowId,
     closeWindow,
     minimizeWindow,
@@ -21,7 +20,7 @@ export function WindowFrame({ id, children }: WindowFrameProps) {
     updateWindowSize,
   } = useDesktopStore()
   
-  const window = windows[id]
+  const id = window.id
   const isActive = activeWindowId === id
   const dragControls = useDragControls()
   const constraintsRef = useRef<HTMLDivElement>(null)

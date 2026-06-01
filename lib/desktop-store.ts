@@ -9,6 +9,8 @@ export type WindowId =
   | 'contact'
   | 'trash'
   | 'finder'
+  | 'settings'
+  | 'terminal'
 
 export interface WindowState {
   id: WindowId
@@ -24,11 +26,18 @@ export interface WindowState {
 export type BootPhase = 'bios' | 'login' | 'desktop'
 export type AccentColor = 'cyan' | 'purple' | 'green'
 
+export interface NotificationData {
+  id: string
+  title: string
+  message: string
+}
+
 interface DesktopState {
   bootPhase: BootPhase
   setBootPhase: (phase: BootPhase) => void
   
-  windows: Record<WindowId, WindowState>
+  windowsMap: Record<WindowId, WindowState>
+  windows: WindowState[]
   activeWindowId: WindowId | null
   highestZIndex: number
   
@@ -43,19 +52,18 @@ interface DesktopState {
   accentColor: AccentColor
   setAccentColor: (color: AccentColor) => void
   
-  showNotification: boolean
-  notificationMessage: string
-  setNotification: (message: string) => void
-  clearNotification: () => void
+  notifications: NotificationData[]
+  addNotification: (notification: Omit<NotificationData, 'id'>) => void
+  removeNotification: (id: string) => void
   
-  spotlightOpen: boolean
-  setSpotlightOpen: (open: boolean) => void
+  showSpotlight: boolean
+  setShowSpotlight: (open: boolean) => void
   
   contextMenu: { x: number; y: number } | null
   setContextMenu: (pos: { x: number; y: number } | null) => void
 }
 
-const defaultWindows: Record<WindowId, WindowState> = {
+const defaultWindowsMap: Record<WindowId, WindowState> = {
   about: {
     id: 'about',
     title: 'whoami',
@@ -136,134 +144,168 @@ const defaultWindows: Record<WindowId, WindowState> = {
     size: { width: 800, height: 500 },
     zIndex: 1,
   },
+  settings: {
+    id: 'settings',
+    title: 'System Preferences',
+    isOpen: false,
+    isMinimized: false,
+    isMaximized: false,
+    position: { x: 140, y: 80 },
+    size: { width: 700, height: 450 },
+    zIndex: 1,
+  },
+  terminal: {
+    id: 'terminal',
+    title: 'Terminal',
+    isOpen: false,
+    isMinimized: false,
+    isMaximized: false,
+    position: { x: 160, y: 90 },
+    size: { width: 700, height: 450 },
+    zIndex: 1,
+  },
 }
 
-export const useDesktopStore = create<DesktopState>((set) => ({
+const getOpenWindows = (windowsMap: Record<WindowId, WindowState>): WindowState[] => {
+  return Object.values(windowsMap).filter(w => w.isOpen && !w.isMinimized)
+}
+
+export const useDesktopStore = create<DesktopState>((set, get) => ({
   bootPhase: 'bios',
   setBootPhase: (phase) => set({ bootPhase: phase }),
   
-  windows: defaultWindows,
+  windowsMap: defaultWindowsMap,
+  windows: [],
   activeWindowId: null,
   highestZIndex: 1,
   
   openWindow: (id) => set((state) => {
     const newZIndex = state.highestZIndex + 1
-    return {
-      windows: {
-        ...state.windows,
-        [id]: {
-          ...state.windows[id],
-          isOpen: true,
-          isMinimized: false,
-          zIndex: newZIndex,
-        },
+    const newWindowsMap = {
+      ...state.windowsMap,
+      [id]: {
+        ...state.windowsMap[id],
+        isOpen: true,
+        isMinimized: false,
+        zIndex: newZIndex,
       },
+    }
+    return {
+      windowsMap: newWindowsMap,
+      windows: getOpenWindows(newWindowsMap),
       activeWindowId: id,
       highestZIndex: newZIndex,
     }
   }),
   
-  closeWindow: (id) => set((state) => ({
-    windows: {
-      ...state.windows,
+  closeWindow: (id) => set((state) => {
+    const newWindowsMap = {
+      ...state.windowsMap,
       [id]: {
-        ...state.windows[id],
+        ...state.windowsMap[id],
         isOpen: false,
         isMinimized: false,
         isMaximized: false,
       },
-    },
-    activeWindowId: state.activeWindowId === id ? null : state.activeWindowId,
-  })),
+    }
+    return {
+      windowsMap: newWindowsMap,
+      windows: getOpenWindows(newWindowsMap),
+      activeWindowId: state.activeWindowId === id ? null : state.activeWindowId,
+    }
+  }),
   
-  minimizeWindow: (id) => set((state) => ({
-    windows: {
-      ...state.windows,
+  minimizeWindow: (id) => set((state) => {
+    const newWindowsMap = {
+      ...state.windowsMap,
       [id]: {
-        ...state.windows[id],
+        ...state.windowsMap[id],
         isMinimized: true,
       },
-    },
-    activeWindowId: state.activeWindowId === id ? null : state.activeWindowId,
-  })),
+    }
+    return {
+      windowsMap: newWindowsMap,
+      windows: getOpenWindows(newWindowsMap),
+      activeWindowId: state.activeWindowId === id ? null : state.activeWindowId,
+    }
+  }),
   
-  maximizeWindow: (id) => set((state) => ({
-    windows: {
-      ...state.windows,
+  maximizeWindow: (id) => set((state) => {
+    const newWindowsMap = {
+      ...state.windowsMap,
       [id]: {
-        ...state.windows[id],
-        isMaximized: !state.windows[id].isMaximized,
+        ...state.windowsMap[id],
+        isMaximized: !state.windowsMap[id].isMaximized,
       },
-    },
-  })),
+    }
+    return {
+      windowsMap: newWindowsMap,
+      windows: getOpenWindows(newWindowsMap),
+    }
+  }),
   
   focusWindow: (id) => set((state) => {
-    if (state.windows[id].isMinimized) {
-      const newZIndex = state.highestZIndex + 1
-      return {
-        windows: {
-          ...state.windows,
-          [id]: {
-            ...state.windows[id],
-            isMinimized: false,
-            zIndex: newZIndex,
-          },
-        },
-        activeWindowId: id,
-        highestZIndex: newZIndex,
-      }
-    }
-    
     const newZIndex = state.highestZIndex + 1
-    return {
-      windows: {
-        ...state.windows,
-        [id]: {
-          ...state.windows[id],
-          zIndex: newZIndex,
-        },
+    const newWindowsMap = {
+      ...state.windowsMap,
+      [id]: {
+        ...state.windowsMap[id],
+        isMinimized: false,
+        zIndex: newZIndex,
       },
+    }
+    return {
+      windowsMap: newWindowsMap,
+      windows: getOpenWindows(newWindowsMap),
       activeWindowId: id,
       highestZIndex: newZIndex,
     }
   }),
   
-  updateWindowPosition: (id, position) => set((state) => ({
-    windows: {
-      ...state.windows,
+  updateWindowPosition: (id, position) => set((state) => {
+    const newWindowsMap = {
+      ...state.windowsMap,
       [id]: {
-        ...state.windows[id],
+        ...state.windowsMap[id],
         position,
       },
-    },
-  })),
+    }
+    return {
+      windowsMap: newWindowsMap,
+      windows: getOpenWindows(newWindowsMap),
+    }
+  }),
   
-  updateWindowSize: (id, size) => set((state) => ({
-    windows: {
-      ...state.windows,
+  updateWindowSize: (id, size) => set((state) => {
+    const newWindowsMap = {
+      ...state.windowsMap,
       [id]: {
-        ...state.windows[id],
+        ...state.windowsMap[id],
         size,
       },
-    },
-  })),
+    }
+    return {
+      windowsMap: newWindowsMap,
+      windows: getOpenWindows(newWindowsMap),
+    }
+  }),
   
   accentColor: 'cyan',
   setAccentColor: (color) => set({ accentColor: color }),
   
-  showNotification: false,
-  notificationMessage: '',
-  setNotification: (message) => set({ 
-    showNotification: true, 
-    notificationMessage: message 
-  }),
-  clearNotification: () => set({ 
-    showNotification: false, 
-    notificationMessage: '' 
-  }),
+  notifications: [],
+  addNotification: (notification) => set((state) => ({
+    notifications: [
+      ...state.notifications,
+      { ...notification, id: Math.random().toString(36).slice(2) }
+    ],
+  })),
+  removeNotification: (id) => set((state) => ({
+    notifications: state.notifications.filter(n => n.id !== id),
+  })),
   
-  spotlightOpen: false,
-  setSpotlightOpen: (open) => set({ spotlightOpen: open }),
+  showSpotlight: false,
+  setShowSpotlight: (open) => set({ showSpotlight: open }),
   
   contextMenu: null,
   setContextMenu: (pos) => set({ contextMenu: pos }),

@@ -68,17 +68,17 @@ export function BiosBoot({ onComplete }: BiosBootProps) {
             transition={{ duration: 0.1 }}
             className="text-[#00ff88] text-sm leading-relaxed"
           >
-            {line.startsWith('SoufyaneOS BIOS') ? (
+            {line && line.startsWith('SoufyaneOS BIOS') ? (
               <span className="text-[#00f0ff] font-bold">{line}</span>
-            ) : line.includes('OK') ? (
+            ) : line && line.includes('OK') ? (
               <>
                 {line.replace('OK', '')}
                 <span className="text-[#00ff88]">OK</span>
               </>
-            ) : line.includes('...') && !line.includes('OK') ? (
+            ) : line && line.includes('...') && !line.includes('OK') ? (
               <span className="text-[#8888aa]">{line}</span>
             ) : (
-              line
+              line || ''
             )}
           </motion.div>
         ))}
