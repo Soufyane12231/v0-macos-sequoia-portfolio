@@ -45,21 +45,10 @@ export function ExperienceWindow() {
   const [displayedLines, setDisplayedLines] = useState<string[]>([])
   const [isComplete, setIsComplete] = useState(false)
   
-  useEffect(() => {
+ useEffect(() => {
     const lines = experienceLog.split('\n')
-    let index = 0
-    
-    const interval = setInterval(() => {
-      if (index < lines.length) {
-        setDisplayedLines(prev => [...prev, lines[index]])
-        index++
-      } else {
-        setIsComplete(true)
-        clearInterval(interval)
-      }
-    }, 40)
-    
-    return () => clearInterval(interval)
+    setDisplayedLines(lines)
+    setIsComplete(true)
   }, [])
   
   const renderLine = (line: string, index: number) => {
