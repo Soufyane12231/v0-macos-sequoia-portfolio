@@ -68,12 +68,12 @@ export function ContactWindow() {
             <span className="text-[#00f0ff]">&gt;</span>
             <span>💼</span>
             <a 
-              href="https://linkedin.com/in/soufyane-elaouni" 
+              href="https://www.linkedin.com/in/soufyane-elaouni-63507732a/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-[#e8e8f0] hover:text-[#00f0ff] transition-colors"
             >
-              linkedin.com/in/soufyane-elaouni
+              linkedin.com/in/soufyane-elaouni-63507732a
             </a>
             <span className="text-[#555] text-xs">[open →]</span>
           </div>
