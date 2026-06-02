@@ -147,7 +147,7 @@ const dockItems: DockItem[] = [
   {
     id: 'github',
     label: 'GitHub',
-    externalUrl: 'https://github.com/soufyane-elaouni',
+    externalUrl: 'https://github.com/Soufyane12231',
     icon: (
       <svg viewBox="0 0 48 48" className="w-full h-full">
         <rect x="4" y="4" width="40" height="40" rx="8" fill="#1a1a2e" />
@@ -158,7 +158,7 @@ const dockItems: DockItem[] = [
   {
     id: 'linkedin',
     label: 'LinkedIn',
-    externalUrl: 'https://linkedin.com/in/soufyane-elaouni',
+    externalUrl: 'https://www.linkedin.com/in/soufyane-elaouni-63507732a/',
     icon: (
       <svg viewBox="0 0 48 48" className="w-full h-full">
         <rect x="4" y="4" width="40" height="40" rx="8" fill="#0077b5" />
