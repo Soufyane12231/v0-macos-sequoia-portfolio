@@ -21,18 +21,23 @@ export function ContactWindow() {
     setTimeout(() => setCopiedField(null), 2000)
   }
 
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
     setIsSubmitting(true)
     setError(null)
     try {
-      const { init, send } = await import('@emailjs/browser')
-      init('qalkF746xHd7Umu9w')
-      await send('service_8zfr17a', 'template_d74wrcm', {
-        from_name: formData.name,
-        from_email: formData.email,
-        subject: formData.subject,
-        message: formData.message,
-      })
+      const emailjs = await import('@emailjs/browser')
+      await emailjs.sendForm
+      await emailjs.send(
+        'service_8zfr17a',
+        'template_d74wrcm',
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        },
+        'qalkF746xHd7Umu9w'
+      )
       setIsSubmitted(true)
     } catch (err) {
       setError('Failed to send message. Please try again.')
@@ -40,7 +45,6 @@ export function ContactWindow() {
       setIsSubmitting(false)
     }
   }
-
   return (
     <div className="h-full flex flex-col bg-[#0a0a12] font-mono text-sm">
       <div className="flex-1 p-4 overflow-auto">
