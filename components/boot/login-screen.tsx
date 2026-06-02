@@ -89,7 +89,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                <span className="text-3xl font-bold text-[#00f0ff] font-[var(--font-space)]">SE</span>
+                <img src="/profile.jpeg" alt="Soufyane Elaouni" style={{ width: '72px', height: '72px', borderRadius: '50%', objectFit: 'cover' }} />
               </motion.div>
               {/* Online indicator */}
               <div className="absolute bottom-1 right-1 w-4 h-4 bg-[#00ff88] rounded-full border-2 border-[#0d0d1a]" />
