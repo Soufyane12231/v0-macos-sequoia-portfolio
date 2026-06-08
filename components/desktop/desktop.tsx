@@ -19,6 +19,7 @@ import { Notification } from "@/components/system/notification";
 import { DesktopContextMenu } from "@/components/system/context-menu";
 import { Spotlight } from "@/components/system/spotlight";
 import { MobileApp } from "@/components/mobile/mobile-app";
+import { WelcomeTerminal } from "@/components/desktop/WelcomeTerminal";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
@@ -116,6 +117,9 @@ export function Desktop() {
         </AnimatePresence>
 
         <Dock />
+
+        {/* Welcome terminal — floating bottom-left */}
+        {bootPhase === "desktop" && <WelcomeTerminal />}
 
         <div className="fixed top-8 right-4 z-[9999] flex flex-col gap-2">
           <AnimatePresence>
