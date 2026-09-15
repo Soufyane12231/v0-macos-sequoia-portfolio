@@ -5,6 +5,38 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const experiences = [
   {
+    id: 'renault',
+    period: '2026',
+    status: 'ACTIVE',
+    role: 'STAGIAIRE SYSTÈMES EMBARQUÉS & DIAGNOSTIC AUTO',
+    company: 'Renault Technology Morocco (RTMA)',
+    location: 'Tanger, Morocco',
+    duration: 'Juin 2026 – Présent',
+    supervisor: 'M. A. BOULBEN',
+    color: '#ffcc00', // Jaune Renault
+    icon: '🏎️',
+    summary:
+      "Développement d'un outil de diagnostic embarqué low-cost utilisant un ESP32 pour automatiser la validation des ECU sur la ligne de production de véhicules.",
+    context: [
+      'Renault Technology Morocco (RTMA) — Ingénierie de production',
+      'Mission : Automatiser et optimiser la vérification des calculateurs (ECU) avant l\'assemblage du tableau de bord',
+      'Remplacement des outils de diagnostic conventionnels lourds par une solution embarquée agile'
+    ],
+    technical: [
+      'Développement d\'un framework de diagnostic modulaire CAN/UDS avec ESP32',
+      'Identification et validation de 9 ECUs distincts',
+      'Support évolutif permettant l\'ajout d\'ECUs supplémentaires via la configuration des ID CAN',
+      'Utilisation des protocoles de communication automobile : CAN, UDS, et ISO-TP',
+      'Création d\'un tableau de bord intuitif pour simplifier l\'interaction des opérateurs sur la ligne'
+    ],
+    results: [
+      'Réduction spectaculaire du temps de diagnostic complet du véhicule : de 10 minutes à 19 secondes',
+      'Simplification majeure du processus de validation sur la chaîne d\'assemblage',
+      'Solution matérielle standalone pleinement fonctionnelle'
+    ],
+    stack: ['ESP32', 'C/C++', 'CAN', 'UDS', 'ISO-TP', 'Embedded Linux'],
+  },
+  {
     id: 'lafarge',
     period: '2025',
     status: 'COMPLETED',
@@ -129,7 +161,7 @@ export function ExperienceWindow() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a12] overflow-hidden">
+    <div className="h-full w-full flex flex-col bg-[#0a0a12] overflow-hidden">
       {/* Terminal header */}
       <div className="px-4 py-2 border-b border-[rgba(0,240,255,0.08)] bg-[rgba(0,0,0,0.3)] flex-shrink-0">
         <div className="font-mono text-[#00ff88] text-sm">
@@ -137,7 +169,7 @@ export function ExperienceWindow() {
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-h-0">
         {/* LEFT SIDEBAR */}
         <div className="w-56 flex-shrink-0 border-r border-[rgba(0,240,255,0.08)] bg-[rgba(0,0,0,0.2)] overflow-y-auto">
           <div className="p-3">
@@ -195,7 +227,7 @@ export function ExperienceWindow() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.2 }}
-            className="flex-1 overflow-y-auto p-5"
+            className="flex-1 overflow-y-auto p-5 min-w-0"
           >
             {/* Header block */}
             <div className="mb-4">
