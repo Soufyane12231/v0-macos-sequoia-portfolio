@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState, type ComponentType } from "react";
+import { AnimatePresence, MotionConfig } from "framer-motion";
 import { useDesktopStore } from "@/lib/desktop-store";
 import { BiosBoot } from "@/components/boot/bios-boot";
-import { LoginScreen } from "@/components/boot/login-screen";
 import { DesktopWallpaper } from "@/components/desktop/wallpaper";
 import { MenuBar } from "@/components/desktop/menu-bar";
 import { DesktopIcons } from "@/components/desktop/desktop-icons";
@@ -20,10 +21,8 @@ import { DesktopContextMenu } from "@/components/system/context-menu";
 import { Spotlight } from "@/components/system/spotlight";
 import { MobileApp } from "@/components/mobile/mobile-app";
 import { WelcomeTerminal } from "@/components/desktop/WelcomeTerminal";
-import { AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
 
-const windowComponents: Record<string, React.ComponentType> = {
+const windowComponents: Record<string, ComponentType> = {
   about: AboutWindow,
   projects: ProjectsWindow,
   skills: SkillsWindow,
@@ -36,6 +35,8 @@ const windowComponents: Record<string, React.ComponentType> = {
   trash: TrashWindow,
 };
 
+const BOOT_SEEN_KEY = "soufyaneos:boot-seen";
+
 export function Desktop() {
   const {
     bootPhase,
@@ -46,9 +47,16 @@ export function Desktop() {
     showSpotlight,
     setShowSpotlight,
     addNotification,
+    openWindow,
+    closeWindow,
+    activeWindowId,
   } = useDesktopStore();
 
-  const [isMobile, setIsMobile] = useState(false);
+  // Initialised from the viewport so a phone never paints the desktop shell
+  // for a frame before the resize listener swaps in the mobile app.
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window === "undefined" ? false : window.innerWidth < 768,
+  );
 
   useEffect(() => {
     const checkMobile = () => {
@@ -59,11 +67,38 @@ export function Desktop() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // The boot sequence is a treat, not a toll booth: it only plays once per
+  // browser session and can always be skipped.
   useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem(BOOT_SEEN_KEY) === "1") {
+        setBootPhase("desktop");
+      }
+    } catch {
+      /* sessionStorage unavailable — play the boot sequence */
+    }
+  }, [setBootPhase]);
+
+  useEffect(() => {
+    if (bootPhase !== "desktop" || isMobile) return;
+    // Never greet a visitor with an empty desktop.
+    if (!useDesktopStore.getState().windowsMap.about.isOpen) {
+      openWindow("about");
+    }
+  }, [bootPhase, isMobile, openWindow]);
+
+  // Keyboard shortcuts belong to the desktop: not to the BIOS boot screen and
+  // not to the mobile app, where Ctrl/⌘+K would hijack the browser.
+  useEffect(() => {
+    if (bootPhase !== "desktop" || isMobile) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setShowSpotlight(!showSpotlight);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "w" && activeWindowId) {
+        e.preventDefault();
+        closeWindow(activeWindowId);
       }
       if (e.key === "Escape") {
         setShowSpotlight(false);
@@ -71,72 +106,80 @@ export function Desktop() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showSpotlight, setShowSpotlight]);
+  }, [showSpotlight, setShowSpotlight, bootPhase, isMobile, activeWindowId, closeWindow]);
 
-  // Welcome notification after login
   useEffect(() => {
-    if (bootPhase === "desktop") {
-      const timer = setTimeout(() => {
-        addNotification({
-          title: "Welcome to SoufyaneOS",
-          message: "Click icons to explore my portfolio!",
-        });
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [bootPhase, addNotification]);
+    if (bootPhase !== "desktop" || isMobile) return;
+    const timer = window.setTimeout(() => {
+      addNotification({
+        title: "Welcome to SoufyaneOS",
+        message:
+          "Click a dock icon to open a window, or press Ctrl/⌘ + K to search. The full CV is on the home page.",
+      });
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [bootPhase, isMobile, addNotification]);
 
   if (isMobile) {
     return <MobileApp />;
   }
 
   if (bootPhase === "bios") {
-    return <BiosBoot onComplete={() => setBootPhase("login")} />;
-  }
-
-  if (bootPhase === "login") {
-    return <LoginScreen onLogin={() => setBootPhase("desktop")} />;
+    return (
+      <BiosBoot
+        onComplete={() => {
+          try {
+            window.sessionStorage.setItem(BOOT_SEEN_KEY, "1");
+          } catch {
+            /* ignore */
+          }
+          setBootPhase("desktop");
+        }}
+      />
+    );
   }
 
   return (
-    <DesktopContextMenu>
-      <div className="relative h-screen w-screen overflow-hidden select-none">
-        <DesktopWallpaper />
-        <MenuBar />
-        <DesktopIcons />
+    <MotionConfig reducedMotion="user">
+      <DesktopContextMenu>
+        <main aria-label="SoufyaneOS interactive desktop">
+          <div className="relative h-screen w-screen overflow-hidden select-none">
+            <DesktopWallpaper />
+            <MenuBar />
+            <DesktopIcons />
 
-        <AnimatePresence>
-          {windows.map((window) => {
-            const WindowContent = windowComponents[window.id];
-            return (
-              <WindowFrame key={window.id} window={window}>
-                {WindowContent && <WindowContent />}
-              </WindowFrame>
-            );
-          })}
-        </AnimatePresence>
+            <AnimatePresence>
+              {windows.map((win) => {
+                const WindowContent = windowComponents[win.id];
+                return (
+                  <WindowFrame key={win.id} window={win}>
+                    {WindowContent && <WindowContent />}
+                  </WindowFrame>
+                );
+              })}
+            </AnimatePresence>
 
-        <Dock />
+            <Dock />
 
-        {/* Welcome terminal — floating bottom-left */}
-        {bootPhase === "desktop" && <WelcomeTerminal />}
+            {/* Welcome terminal — floating bottom-left */}
+            <WelcomeTerminal />
 
-        <div className="fixed top-8 right-4 z-[9999] flex flex-col gap-2">
-          <AnimatePresence>
-            {notifications.map((notification) => (
-              <Notification
-                key={notification.id}
-                notification={notification}
-                onClose={() => removeNotification(notification.id)}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+            <div className="fixed top-8 right-4 z-[9999] flex flex-col gap-2">
+              <AnimatePresence>
+                {notifications.map((notification) => (
+                  <Notification
+                    key={notification.id}
+                    notification={notification}
+                    onClose={() => removeNotification(notification.id)}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
 
-        <AnimatePresence>
-          {showSpotlight && <Spotlight />}
-        </AnimatePresence>
-      </div>
-    </DesktopContextMenu>
+            <AnimatePresence>{showSpotlight && <Spotlight />}</AnimatePresence>
+          </div>
+        </main>
+      </DesktopContextMenu>
+    </MotionConfig>
   );
 }

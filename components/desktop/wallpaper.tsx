@@ -43,7 +43,7 @@ export function DesktopWallpaper() {
       })
     }
     
-    let animationId: number
+    let animationId: number | undefined
     
     const animate = () => {
       // Clear with dark background
@@ -116,10 +116,16 @@ export function DesktopWallpaper() {
     }
     
     animate()
+
+    // Users who prefer reduced motion still get the wallpaper, but as a
+    // single static frame instead of an endless animation.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches && animationId !== undefined) {
+      cancelAnimationFrame(animationId)
+    }
     
     return () => {
       window.removeEventListener('resize', resize)
-      cancelAnimationFrame(animationId)
+      if (animationId !== undefined) cancelAnimationFrame(animationId)
     }
   }, [])
   
@@ -127,10 +133,11 @@ export function DesktopWallpaper() {
     <>
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 pointer-events-none"
+        className="pointer-events-none fixed inset-0"
+        aria-hidden="true"
       />
       {/* Scanline overlay */}
-      <div className="fixed inset-0 pointer-events-none scanlines opacity-30" />
+      <div className="scanlines pointer-events-none fixed inset-0 opacity-30" aria-hidden="true" />
     </>
   )
 }

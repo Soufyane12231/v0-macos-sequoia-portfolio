@@ -12,4 +12,9 @@ __v0_jsx-dev-runtime.ts
 # Common ignores
 node_modules
 .next/
+out/
 .DS_Store
+package-lock.json
+# next-env.d.ts stays tracked: it is the file that makes a standalone
+# `tsc --noEmit` work on a fresh clone, before the first build.
+*.tsbuildinfo

@@ -1,176 +1,302 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useDesktopStore, WindowId } from '@/lib/desktop-store'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { useDesktopStore, type WindowId } from '@/lib/desktop-store'
+import { site, t } from '@/lib/portfolio-data'
+import { useLanguage } from '@/components/portfolio/language-provider'
 
-interface SearchResult {
-  id: WindowId
-  title: string
-  type: string
-  icon: string
-}
-
-const searchIndex: SearchResult[] = [
-  { id: 'about', title: 'About Me - whoami', type: 'Window', icon: '👤' },
-  { id: 'projects', title: 'Projects - ~/projects', type: 'Window', icon: '📁' },
-  { id: 'skills', title: 'Skills - skills.json', type: 'Window', icon: '⚡' },
-  { id: 'experience', title: 'Experience - experience.log', type: 'Window', icon: '💼' },
-  { id: 'certificates', title: 'Certificates', type: 'Window', icon: '🏆' },
-  { id: 'contact', title: 'Contact - contact.sh', type: 'Window', icon: '📬' },
-]
+type SpotlightResult =
+  | { kind: 'window'; id: WindowId; title: string; subtitle: string; icon: string; keywords: string }
+  | { kind: 'link'; id: string; title: string; subtitle: string; icon: string; keywords: string; href: string }
 
 export function Spotlight() {
-  const { spotlightOpen, setSpotlightOpen, openWindow } = useDesktopStore()
+  const { setShowSpotlight, openWindow } = useDesktopStore()
+  const { lang } = useLanguage()
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
-  
-  const results = query.length > 0 
-    ? searchIndex.filter(item => 
-        item.title.toLowerCase().includes(query.toLowerCase()) ||
-        item.type.toLowerCase().includes(query.toLowerCase())
-      )
-    : searchIndex.slice(0, 4)
-  
+
+  const results = useMemo<SpotlightResult[]>(() => {
+    const windows: SpotlightResult[] = [
+      {
+        kind: 'window',
+        id: 'about',
+        title: lang === 'fr' ? 'À propos — whoami' : 'About — whoami',
+        subtitle: 'profil, formation, langues',
+        icon: '👤',
+        keywords: 'about whoami profil profile bio',
+      },
+      {
+        kind: 'window',
+        id: 'projects',
+        title: lang === 'fr' ? 'Projets — ~/projects' : 'Projects — ~/projects',
+        subtitle: 'ecu diagnostics acc ball beam',
+        icon: '📁',
+        keywords: 'projects projets ecu can uds acc ball beam matlab fpga',
+      },
+      {
+        kind: 'window',
+        id: 'experience',
+        title: lang === 'fr' ? 'Expérience — experience.log' : 'Experience — experience.log',
+        subtitle: 'renault holcim club robotique',
+        icon: '💼',
+        keywords: 'experience expérience renault holcim stage internship tia wincc',
+      },
+      {
+        kind: 'window',
+        id: 'skills',
+        title: lang === 'fr' ? 'Compétences — skills.json' : 'Skills — skills.json',
+        icon: '⚡',
+        subtitle: 'automatisme, embarqué, can/uds, simulation',
+        keywords: 'skills compétences tia portal wincc can uds esp32 stm32 matlab',
+      },
+      {
+        kind: 'window',
+        id: 'certificates',
+        title: lang === 'fr' ? 'Certifications — certificates/' : 'Certificates — certificates/',
+        subtitle: 'abb robotics, ge aerospace, datacamp',
+        icon: '🏆',
+        keywords: 'certificates certifications abb ge aerospace datacamp udemy',
+      },
+      {
+        kind: 'window',
+        id: 'contact',
+        title: lang === 'fr' ? 'Contact — contact.sh' : 'Contact — contact.sh',
+        subtitle: 'email, téléphone, linkedin, github',
+        icon: '📬',
+        keywords: 'contact email téléphone phone linkedin github cv',
+      },
+    ]
+
+    const links: SpotlightResult[] = [
+      {
+        kind: 'link',
+        id: 'cv',
+        title: lang === 'fr' ? 'Télécharger le CV (PDF)' : 'Download the CV (PDF)',
+        subtitle: site.links.cv,
+        icon: '📄',
+        keywords: 'cv resume pdf download télécharger',
+        href: site.links.cv,
+      },
+      {
+        kind: 'link',
+        id: 'resume-page',
+        title: lang === 'fr' ? 'Version CV de la page d’accueil' : 'Printable CV page',
+        subtitle: '/',
+        icon: '🏠',
+        keywords: 'home accueil cv version printable',
+        href: '/',
+      },
+      {
+        kind: 'link',
+        id: 'github',
+        title: 'GitHub',
+        subtitle: 'github.com/Soufyane12231',
+        icon: '🐙',
+        keywords: 'github code repository',
+        href: site.links.github,
+      },
+      {
+        kind: 'link',
+        id: 'linkedin',
+        title: 'LinkedIn',
+        subtitle: site.links.linkedinLabel,
+        icon: '💼',
+        keywords: 'linkedin profile',
+        href: site.links.linkedin,
+      },
+    ]
+
+    const all = [...windows, ...links]
+    const needle = query.trim().toLowerCase()
+    if (!needle) return windows.slice(0, 4)
+    return all.filter((item) => `${item.title} ${item.subtitle} ${item.keywords}`.toLowerCase().includes(needle))
+  }, [query, lang])
+
+  const close = () => {
+    setShowSpotlight(false)
+    setQuery('')
+  }
+
+  const activate = (result: SpotlightResult | undefined) => {
+    if (!result) return
+    if (result.kind === 'window') {
+      openWindow(result.id)
+    } else if (result.id === 'cv') {
+      // A CV action has to download the file: opening a PDF in a new tab
+      // strands the visitor on a document with no way back to the portfolio.
+      const anchor = document.createElement('a')
+      anchor.href = result.href
+      anchor.download = site.links.cvFileName
+      anchor.rel = 'noopener'
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+    } else {
+      window.open(result.href, '_blank', 'noopener,noreferrer')
+    }
+    close()
+  }
+
+  // Remember where focus came from so Escape/selection returns the visitor to
+  // the window they were working in, not to the top of the document.
+  const previouslyFocused = useRef<HTMLElement | null>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === ' ') {
-        e.preventDefault()
-        setSpotlightOpen(!spotlightOpen)
+    previouslyFocused.current = document.activeElement as HTMLElement | null
+    inputRef.current?.focus()
+    return () => previouslyFocused.current?.focus?.()
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        close()
+        return
       }
-      
-      if (spotlightOpen) {
-        if (e.key === 'Escape') {
-          setSpotlightOpen(false)
-          setQuery('')
+      if (event.key === 'Tab') {
+        // The overlay is modal, so focus has to stay inside it.
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+          'input, button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+        )
+        if (!focusable || focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        const active = document.activeElement
+        if (event.shiftKey && (active === first || !dialogRef.current?.contains(active))) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && active === last) {
+          event.preventDefault()
+          first.focus()
         }
-        if (e.key === 'ArrowDown') {
-          e.preventDefault()
-          setSelectedIndex(i => Math.min(i + 1, results.length - 1))
-        }
-        if (e.key === 'ArrowUp') {
-          e.preventDefault()
-          setSelectedIndex(i => Math.max(i - 1, 0))
-        }
-        if (e.key === 'Enter' && results[selectedIndex]) {
-          openWindow(results[selectedIndex].id)
-          setSpotlightOpen(false)
-          setQuery('')
-        }
+        return
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        setSelectedIndex((index) => Math.min(index + 1, results.length - 1))
+        return
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        setSelectedIndex((index) => Math.max(index - 1, 0))
+        return
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        activate(results[selectedIndex])
       }
     }
-    
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [spotlightOpen, setSpotlightOpen, results, selectedIndex, openWindow])
-  
-  useEffect(() => {
-    if (spotlightOpen) {
-      inputRef.current?.focus()
-      setSelectedIndex(0)
-    }
-  }, [spotlightOpen])
-  
+  }, [results, selectedIndex])
+
   useEffect(() => {
     setSelectedIndex(0)
   }, [query])
-  
+
   return (
-    <AnimatePresence>
-      {spotlightOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-[300]"
-            onClick={() => {
-              setSpotlightOpen(false)
-              setQuery('')
-            }}
-          />
-          
-          {/* Spotlight panel */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="fixed top-[20%] left-1/2 -translate-x-1/2 z-[301] w-[600px] max-w-[90vw]"
-          >
-            <div className="bg-[rgba(13,13,26,0.95)] backdrop-blur-2xl border border-[rgba(0,240,255,0.15)] rounded-2xl shadow-2xl overflow-hidden">
-              {/* Search input */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-[rgba(0,240,255,0.08)]">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-[#8888aa]">
-                  <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
-                  <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search SoufyaneOS..."
-                  className="flex-1 bg-transparent text-[#e8e8f0] text-lg focus:outline-none placeholder-[#555]"
-                />
-                <kbd className="px-2 py-0.5 bg-[rgba(255,255,255,0.1)] rounded text-[#555] text-xs">
-                  esc
-                </kbd>
-              </div>
-              
-              {/* Results */}
-              <div className="max-h-[400px] overflow-auto py-2">
-                {results.length > 0 ? (
-                  results.map((result, index) => (
-                    <button
-                      key={result.id}
-                      onClick={() => {
-                        openWindow(result.id)
-                        setSpotlightOpen(false)
-                        setQuery('')
-                      }}
-                      className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${
-                        index === selectedIndex 
-                          ? 'bg-[rgba(0,240,255,0.1)]' 
-                          : 'hover:bg-[rgba(255,255,255,0.05)]'
-                      }`}
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-[rgba(0,240,255,0.1)] flex items-center justify-center text-xl">
-                        {result.icon}
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="text-[#e8e8f0] font-medium">{result.title}</div>
-                        <div className="text-[#555] text-xs">{result.type}</div>
-                      </div>
-                      {index === selectedIndex && (
-                        <kbd className="px-2 py-0.5 bg-[rgba(0,240,255,0.1)] rounded text-[#00f0ff] text-xs">
-                          return
-                        </kbd>
-                      )}
-                    </button>
-                  ))
-                ) : (
-                  <div className="px-4 py-8 text-center text-[#555]">
-                    No results found for &quot;{query}&quot;
-                  </div>
-                )}
-              </div>
-              
-              {/* Footer */}
-              <div className="px-4 py-2 border-t border-[rgba(0,240,255,0.08)] flex items-center justify-between text-xs text-[#555]">
-                <span>Spotlight Search</span>
-                <div className="flex items-center gap-2">
-                  <kbd className="px-1.5 py-0.5 bg-[rgba(255,255,255,0.1)] rounded">↑</kbd>
-                  <kbd className="px-1.5 py-0.5 bg-[rgba(255,255,255,0.1)] rounded">↓</kbd>
-                  <span>to navigate</span>
-                </div>
-              </div>
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[300] bg-[rgba(0,0,0,0.5)]"
+        onClick={close}
+        aria-hidden="true"
+      />
+
+      <motion.div
+        ref={dialogRef}
+        initial={{ opacity: 0, scale: 0.95, y: -20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: -20 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+        className="fixed left-1/2 top-[20%] z-[301] w-[600px] max-w-[90vw] -translate-x-1/2"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Spotlight — recherche dans SoufyaneOS"
+      >
+        <div className="overflow-hidden rounded-2xl border border-[rgba(0,240,255,0.15)] bg-[rgba(13,13,26,0.95)] shadow-2xl backdrop-blur-2xl">
+          <div className="flex items-center gap-3 border-b border-[rgba(0,240,255,0.08)] px-4 py-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-[#8888aa]" aria-hidden="true">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+              <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <input
+              ref={inputRef}
+              type="text"
+              role="combobox"
+              aria-expanded="true"
+              aria-controls="spotlight-results"
+              aria-autocomplete="list"
+              aria-activedescendant={
+                results.length > 0 ? `spotlight-option-${selectedIndex}` : undefined
+              }
+              aria-label={lang === 'fr' ? 'Rechercher' : 'Search'}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={lang === 'fr' ? 'Rechercher dans SoufyaneOS…' : 'Search SoufyaneOS…'}
+              className="flex-1 bg-transparent text-lg text-[#e8e8f0] placeholder-[#8b91a3] focus:outline-none"
+            />
+            <kbd className="rounded bg-[rgba(255,255,255,0.1)] px-2 py-0.5 text-xs text-[#8b91a3]">esc</kbd>
+          </div>
+
+          <div id="spotlight-results" role="listbox" className="max-h-[400px] overflow-auto py-2">
+            {results.length > 0 ? (
+              results.map((result, index) => (
+                <button
+                  key={`${result.kind}-${result.id}`}
+                  id={`spotlight-option-${index}`}
+                  type="button"
+                  role="option"
+                  aria-selected={index === selectedIndex}
+                  onMouseEnter={() => setSelectedIndex(index)}
+                  onClick={() => activate(result)}
+                  className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
+                    index === selectedIndex ? 'bg-[rgba(0,240,255,0.1)]' : 'hover:bg-[rgba(255,255,255,0.05)]'
+                  }`}
+                >
+                  <span
+                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-[rgba(0,240,255,0.1)] text-xl"
+                    aria-hidden="true"
+                  >
+                    {result.icon}
+                  </span>
+                  <span className="flex-1">
+                    <span className="block font-medium text-[#e8e8f0]">{result.title}</span>
+                    <span className="block text-xs text-[#8b91a3]">{result.subtitle}</span>
+                  </span>
+                  {index === selectedIndex ? (
+                    <kbd className="rounded bg-[rgba(0,240,255,0.1)] px-2 py-0.5 text-xs text-[#00f0ff]">↵</kbd>
+                  ) : null}
+                </button>
+              ))
+            ) : (
+              <p className="px-4 py-8 text-center text-[#8b91a3]">
+                {lang === 'fr' ? 'Aucun résultat pour' : 'No results for'} &quot;{query}&quot;
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between border-t border-[rgba(0,240,255,0.08)] px-4 py-2 text-xs text-[#8b91a3]">
+            <span>
+              {lang === 'fr'
+                ? 'Recherche — fenêtres, CV, GitHub, LinkedIn'
+                : 'Search — windows, CV, GitHub, LinkedIn'}
+            </span>
+            <div className="flex items-center gap-2">
+              <kbd className="rounded bg-[rgba(255,255,255,0.1)] px-1.5 py-0.5">↑</kbd>
+              <kbd className="rounded bg-[rgba(255,255,255,0.1)] px-1.5 py-0.5">↓</kbd>
+              <span>{t({ fr: 'pour naviguer', en: 'to navigate' }, lang)}</span>
             </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
+    </>
   )
 }

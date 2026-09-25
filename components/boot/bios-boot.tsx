@@ -1,101 +1,119 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useLanguage } from '@/components/portfolio/language-provider'
 
+/**
+ * Boot lines are factual: they describe the real stack of the portfolio owner
+ * (no invented hardware specs, no fake utilisation figures).
+ */
 const bootLines = [
-  'SoufyaneOS BIOS v2.0.1',
-  'Copyright (C) 2025 Soufyane Elaouni',
+  'SoufyaneOS 2.1 — interactive portfolio',
   '',
-  'Initializing SoufyaneOS v2.0...',
-  'Loading kernel modules: [STM32] [ESP32] [FPGA] [CAN Bus]...',
-  'STM32F4 driver loaded successfully',
-  'ESP32 WiFi module initialized',
-  'FPGA fabric configured: 85% LUT utilization',
-  'CAN Bus interface: 500kbps nominal',
+  'Loading profile data .................. OK',
+  'Mounting industrial automation ........ OK   (TIA Portal / WinCC)',
+  'Loading embedded stack ................ OK   (ESP32 / STM32 / Raspberry Pi)',
+  'Attaching CAN bus ..................... OK   (CAN FD / UDS / ISO-TP)',
+  'Loading control models ................. OK   (MATLAB / Simulink / FPGA)',
+  'Mounting projects ..................... OK   (3 engineering projects)',
   '',
-  'Mounting embedded systems... OK',
-  'Calibrating Kalman Filter... OK',
-  'Initializing PID controllers... OK',
-  'Loading sensor drivers... OK',
-  'Connecting to Industrial Network... OK',
-  '',
-  'Memory check: 2048MB OK',
-  'CPU: Mechatronics Core @ 3.2GHz',
-  '',
-  'Booting desktop environment...',
+  'Starting desktop environment...',
 ]
 
-interface BiosBootProps {
-  onComplete: () => void
-}
+const LINE_INTERVAL = 130
 
-export function BiosBoot({ onComplete }: BiosBootProps) {
+export function BiosBoot({ onComplete }: { onComplete: () => void }) {
+  const { lang } = useLanguage()
   const [displayedLines, setDisplayedLines] = useState<string[]>([])
   const [progress, setProgress] = useState(0)
-  
+  const completedRef = useRef(false)
+
+  const finish = () => {
+    if (completedRef.current) return
+    completedRef.current = true
+    onComplete()
+  }
+
   useEffect(() => {
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (reducedMotion) {
+      setDisplayedLines(bootLines)
+      setProgress(100)
+      finish()
+      return
+    }
+
     let lineIndex = 0
-    const lineInterval = setInterval(() => {
+    const interval = window.setInterval(() => {
       if (lineIndex < bootLines.length) {
-        setDisplayedLines(prev => [...prev, bootLines[lineIndex]])
+        setDisplayedLines((prev) => [...prev, bootLines[lineIndex]])
         setProgress((lineIndex / bootLines.length) * 100)
-        lineIndex++
+        lineIndex += 1
       } else {
-        clearInterval(lineInterval)
+        window.clearInterval(interval)
         setProgress(100)
-        setTimeout(onComplete, 500)
+        window.setTimeout(finish, 350)
       }
-    }, 120)
-    
-    return () => clearInterval(lineInterval)
-  }, [onComplete])
-  
+    }, LINE_INTERVAL)
+
+    return () => window.clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <motion.div
-      className="fixed inset-0 bg-black z-50 flex flex-col p-8 font-mono"
+      className="fixed inset-0 z-50 flex flex-col bg-black p-6 font-mono sm:p-8"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.4 }}
+      role="status"
+      aria-live="polite"
+      aria-label={lang === 'fr' ? 'Démarrage de SoufyaneOS' : 'Starting SoufyaneOS'}
     >
-      {/* Boot text */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden text-sm leading-relaxed">
         {displayedLines.map((line, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, x: -10 }}
+            initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.1 }}
-            className="text-[#00ff88] text-sm leading-relaxed"
+            transition={{ duration: 0.08 }}
+            className={line.startsWith('SoufyaneOS') ? 'font-bold text-[#00f0ff]' : 'text-[#e8e8f0]'}
           >
-            {line && line.startsWith('SoufyaneOS BIOS') ? (
-              <span className="text-[#00f0ff] font-bold">{line}</span>
-            ) : line && line.includes('OK') ? (
-              <>
-                {line.replace('OK', '')}
-                <span className="text-[#00ff88]">OK</span>
-              </>
-            ) : line && line.includes('...') && !line.includes('OK') ? (
-              <span className="text-[#8888aa]">{line}</span>
+            {line ? (
+              line.includes('OK') ? (
+                <>
+                  <span className="text-[#8888aa]">{line.replace(/\.\.*\s*OK.*$/, '')}</span>
+                  <span className="text-[#8888aa]">{' '.repeat(Math.max(1, 4))}</span>
+                  <span className="text-[#00ff88]">OK</span>
+                  {line.includes('(') ? <span className="text-[#8b91a3]"> {line.slice(line.indexOf('('))}</span> : null}
+                </>
+              ) : (
+                line
+              )
             ) : (
-              line || ''
+              ' '
             )}
           </motion.div>
         ))}
-        <motion.span 
-          className="inline-block w-2 h-4 bg-[#00ff88] ml-1"
+        <motion.span
+          className="ml-1 inline-block h-4 w-2 bg-[#00ff88]"
           animate={{ opacity: [1, 0] }}
           transition={{ duration: 0.53, repeat: Infinity }}
         />
       </div>
-      
-      {/* Progress bar */}
+
       <div className="mt-auto">
-        <div className="flex items-center gap-4 mb-2">
-          <span className="text-[#8888aa] text-xs">Loading SoufyaneOS</span>
-          <span className="text-[#00f0ff] text-xs">{Math.round(progress)}%</span>
+        <div className="mb-3 flex items-center justify-between gap-4">
+          <span className="text-xs text-[#8888aa]">
+            {lang === 'fr' ? 'Chargement de SoufyaneOS' : 'Loading SoufyaneOS'}
+          </span>
+          <span className="text-xs text-[#00f0ff]">{Math.round(progress)}%</span>
         </div>
-        <div className="h-1 bg-[#1a1a2e] rounded-full overflow-hidden">
+        <div className="h-1 overflow-hidden rounded-full bg-[#1a1a2e]">
           <motion.div
             className="h-full bg-gradient-to-r from-[#00f0ff] to-[#7b2fff]"
             initial={{ width: 0 }}
@@ -103,6 +121,13 @@ export function BiosBoot({ onComplete }: BiosBootProps) {
             transition={{ duration: 0.2 }}
           />
         </div>
+        <button
+          type="button"
+          onClick={finish}
+          className="mt-4 rounded-md border border-[rgba(0,240,255,0.25)] px-3 py-1.5 text-xs text-[#00f0ff] transition-colors hover:bg-[rgba(0,240,255,0.1)]"
+        >
+          Skip / Passer
+        </button>
       </div>
     </motion.div>
   )

@@ -40,9 +40,10 @@
 }
 
 @theme inline {
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  /* Resolved from the next/font variables declared on <html> in app/layout.tsx */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'SFMono-Regular', monospace;
+  --font-display: var(--font-space), system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -72,9 +73,70 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+    /* keep anchored sections clear of the sticky header */
+    scroll-padding-top: 5.5rem;
+  }
+
   body {
     @apply bg-background text-foreground;
-    overflow: hidden;
+    /* The recruiter-first page must scroll; the /os route locks its own viewport. */
+    overflow-x: hidden;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: rgba(0, 240, 255, 0.28);
+    color: #ffffff;
+  }
+}
+
+/* Keyboard-only skip link (visible on focus) */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  transform: translateY(-200%);
+  border-radius: 0.5rem;
+  background: #00f0ff;
+  color: #04121a;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform 0.15s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Subtle OS-style grid backdrop used behind the hero */
+.os-grid {
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 35%, transparent 78%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -149,10 +211,13 @@
   z-index: 1;
 }
 
-/* Traffic light buttons */
+/* Traffic light buttons: 12px dot, 24px hit area for touch and motor control */
 .traffic-light {
   width: 12px;
   height: 12px;
+  padding: 6px;
+  box-sizing: content-box;
+  background-clip: content-box;
   border-radius: 50%;
   cursor: pointer;
   transition: filter 0.15s ease;

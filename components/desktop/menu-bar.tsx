@@ -1,244 +1,254 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useDesktopStore } from '@/lib/desktop-store'
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useDesktopStore, type WindowId } from '@/lib/desktop-store'
+import { useLanguage } from '@/components/portfolio/language-provider'
+import { profile, site } from '@/lib/portfolio-data'
+
+interface MenuEntry {
+  label: string
+  shortcut?: string
+  action?: () => void
+  separator?: boolean
+  href?: string
+  danger?: boolean
+}
 
 export function MenuBar() {
+  const { lang } = useLanguage()
+  const fr = lang === 'fr'
   const [time, setTime] = useState(new Date())
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const { activeWindowId, windows } = useDesktopStore()
-  
+  const { activeWindowId, windowsMap, openWindow, closeWindow, setShowSpotlight, addNotification } = useDesktopStore()
+
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
-  
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false 
-    })
+
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' })
+
+  const activeWindowTitle = activeWindowId ? windowsMap[activeWindowId]?.title : null
+
+  const open = (id: WindowId) => () => {
+    setActiveMenu(null)
+    openWindow(id)
   }
-  
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short',
-      month: 'short', 
-      day: 'numeric' 
-    })
-  }
-  
-  const activeWindowTitle = activeWindowId ? windows[activeWindowId]?.title : null
-  
-  const menus = {
-    file: [
-      { label: 'compile_portfolio.cpp', shortcut: '⌘B' },
-      { label: 'flash_firmware()', shortcut: '⌘F' },
-      { label: 'separator' },
-      { label: 'Export to PDF', shortcut: '⌘E' },
-      { label: 'separator' },
-      { label: 'Close Window', shortcut: '⌘W' },
+
+  const menus: Record<string, MenuEntry[]> = {
+    profile: [
+      { label: fr ? 'whoami — À propos' : 'whoami — About', action: open('about') },
+      {
+        label: fr ? 'experience.log — Expérience' : 'experience.log — Experience',
+        action: open('experience'),
+      },
+      { label: fr ? 'skills.json — Compétences' : 'skills.json — Skills', action: open('skills') },
+      { separator: true, label: 'sep' },
+      { label: fr ? 'Fermer la fenêtre active' : 'Close active window', shortcut: '⌘W', action: () => {
+        setActiveMenu(null)
+        if (activeWindowId) closeWindow(activeWindowId)
+      } },
     ],
-    edit: [
-      { label: 'Undo', shortcut: '⌘Z' },
-      { label: 'Redo', shortcut: '⇧⌘Z' },
-      { label: 'separator' },
-      { label: 'Cut', shortcut: '⌘X' },
-      { label: 'Copy', shortcut: '⌘C' },
-      { label: 'Paste', shortcut: '⌘V' },
+    projects: [
+      { label: fr ? '~/projects — Projets' : '~/projects — Projects', action: open('projects') },
+      {
+        label: fr ? 'certificates/ — Certifications' : 'certificates/ — Certificates',
+        action: open('certificates'),
+      },
+      { label: fr ? 'contact.sh — Contact' : 'contact.sh — Contact', action: open('contact') },
     ],
     view: [
-      { label: 'Show Toolbar', shortcut: '⌘T' },
-      { label: 'Show Sidebar', shortcut: '⌘S' },
-      { label: 'separator' },
-      { label: 'Enter Full Screen', shortcut: '⌃⌘F' },
-    ],
-    window: [
-      { label: 'Minimize', shortcut: '⌘M' },
-      { label: 'Zoom', shortcut: '' },
-      { label: 'separator' },
-      { label: 'Bring All to Front', shortcut: '' },
+      { label: fr ? 'Recherche (Spotlight)' : 'Search (Spotlight)', shortcut: '⌘K', action: () => { setActiveMenu(null); setShowSpotlight(true) } },
+      { separator: true, label: 'sep' },
+      { label: fr ? 'Version CV (page complète)' : 'Printable CV (home page)', action: () => { setActiveMenu(null); window.location.href = '/' } },
     ],
     help: [
-      { label: 'SoufyaneOS Help', shortcut: '' },
-      { label: 'separator' },
-      { label: 'View on GitHub', shortcut: '' },
-      { label: 'Contact Developer', shortcut: '' },
+      { label: fr ? 'Code source du portfolio' : 'Portfolio source code', href: site.links.githubRepo },
+      { label: 'GitHub', href: site.links.github },
+      { label: 'LinkedIn', href: site.links.linkedin },
+      { label: fr ? 'Envoyer un email' : 'Send an email', href: `mailto:${site.email}` },
     ],
   }
-  
+
   return (
-    <div 
-      className="fixed top-0 left-0 right-0 h-7 bg-[rgba(13,13,26,0.85)] backdrop-blur-xl border-b border-[rgba(0,240,255,0.08)] z-50 flex items-center justify-between px-4 text-sm"
+    <div
+      className="fixed left-0 right-0 top-0 z-[110] flex h-7 items-center justify-between border-b border-[rgba(0,240,255,0.08)] bg-[rgba(13,13,26,0.85)] px-4 text-sm backdrop-blur-xl"
       onClick={() => {
         setActiveMenu(null)
         setShowUserMenu(false)
       }}
     >
-      {/* Left side */}
-      <div className="flex items-center gap-4">
-        {/* Logo */}
-        <button 
-          className="flex items-center gap-1 hover:bg-[rgba(255,255,255,0.1)] px-2 py-0.5 rounded transition-colors"
-          onClick={(e) => {
-            e.stopPropagation()
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          aria-label={fr ? 'Menu SoufyaneOS' : 'SoufyaneOS menu'}
+          className="flex h-6 min-w-6 items-center justify-center rounded px-1 transition-colors hover:bg-white/10"
+          onClick={(event) => {
+            event.stopPropagation()
             setActiveMenu(activeMenu === 'logo' ? null : 'logo')
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#00f0ff]">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-[#00f0ff]" aria-hidden="true">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
             <circle cx="12" cy="12" r="4" fill="currentColor" />
-            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="currentColor" strokeWidth="1.5" />
           </svg>
         </button>
-        
+
         <AnimatePresence>
-          {activeMenu === 'logo' && (
+          {activeMenu === 'logo' ? (
             <motion.div
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -5 }}
-              className="absolute top-7 left-2 bg-[rgba(13,13,26,0.95)] backdrop-blur-xl border border-[rgba(0,240,255,0.15)] rounded-lg py-2 min-w-[200px] shadow-xl"
-              onClick={(e) => e.stopPropagation()}
+              className="absolute left-2 top-7 min-w-[240px] rounded-lg border border-[rgba(0,240,255,0.15)] bg-[rgba(13,13,26,0.95)] py-2 shadow-xl backdrop-blur-xl"
+              onClick={(event) => event.stopPropagation()}
             >
-              <div className="px-3 py-1 text-[#8888aa] text-xs">
-                SoufyaneOS v2.0
-              </div>
-              <div className="px-3 py-1 text-[#555] text-xs">
-                Built with C++, Python & passion
+              <div className="px-3 py-1 text-xs text-[#8888aa]">SoufyaneOS v2.1</div>
+              <div className="px-3 py-1 text-xs text-[#8b91a3]">Next.js 16 · React 19 · Tailwind CSS 4</div>
+              <div className="px-3 py-1 text-xs text-[#8b91a3]">
+                {fr ? 'Version interactive — la version CV est sur /' : 'Interactive version — the CV version is at /'}
               </div>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
-        
-        {/* App name */}
+
         <span className="font-semibold text-[#e8e8f0]">SoufyaneOS</span>
-        
-        {/* Active window name */}
-        {activeWindowTitle && (
-          <span className="text-[#8888aa]">{activeWindowTitle}</span>
-        )}
-        
-        {/* Menus */}
-        <div className="flex items-center gap-1 ml-2">
+        {activeWindowTitle ? <span className="text-[#8888aa]">{activeWindowTitle}</span> : null}
+
+        <div className="ml-2 hidden items-center gap-1 sm:flex">
           {Object.entries(menus).map(([key, items]) => (
             <div key={key} className="relative">
               <button
-                className={`px-2 py-0.5 rounded text-[#e8e8f0] hover:bg-[rgba(255,255,255,0.1)] transition-colors capitalize ${activeMenu === key ? 'bg-[rgba(255,255,255,0.1)]' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation()
+                type="button"
+                className={`rounded px-2 py-0.5 capitalize transition-colors hover:bg-white/10 ${
+                  activeMenu === key ? 'bg-white/10 text-white' : 'text-[#e8e8f0]'
+                }`}
+                onClick={(event) => {
+                  event.stopPropagation()
                   setActiveMenu(activeMenu === key ? null : key)
                 }}
               >
                 {key}
               </button>
-              
+
               <AnimatePresence>
-                {activeMenu === key && (
+                {activeMenu === key ? (
                   <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="absolute top-full left-0 mt-1 bg-[rgba(13,13,26,0.95)] backdrop-blur-xl border border-[rgba(0,240,255,0.15)] rounded-lg py-1 min-w-[200px] shadow-xl"
-                    onClick={(e) => e.stopPropagation()}
+                    className="absolute left-0 top-full mt-1 min-w-[240px] rounded-lg border border-[rgba(0,240,255,0.15)] bg-[rgba(13,13,26,0.95)] py-1 shadow-xl backdrop-blur-xl"
+                    onClick={(event) => event.stopPropagation()}
                   >
-                    {items.map((item, i) => 
-                      item.label === 'separator' ? (
-                        <div key={i} className="h-px bg-[rgba(0,240,255,0.1)] my-1" />
+                    {items.map((item, index) =>
+                      item.separator ? (
+                        <div key={index} className="my-1 h-px bg-[rgba(0,240,255,0.1)]" />
+                      ) : item.href ? (
+                        <a
+                          key={index}
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[#e8e8f0] hover:bg-[rgba(0,240,255,0.1)]"
+                        >
+                          {item.label}
+                        </a>
                       ) : (
                         <button
-                          key={i}
-                          className="w-full px-3 py-1.5 text-left text-[#e8e8f0] hover:bg-[rgba(0,240,255,0.1)] flex justify-between items-center"
+                          key={index}
+                          type="button"
+                          onClick={item.action}
+                          className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-[rgba(0,240,255,0.1)] ${
+                            item.danger ? 'text-[#ff5f57]' : 'text-[#e8e8f0]'
+                          }`}
                         >
                           <span>{item.label}</span>
-                          {item.shortcut && (
-                            <span className="text-[#555] text-xs ml-4">{item.shortcut}</span>
-                          )}
+                          {item.shortcut ? <span className="ml-4 text-xs text-[#8b91a3]">{item.shortcut}</span> : null}
                         </button>
-                      )
+                      ),
                     )}
                   </motion.div>
-                )}
+                ) : null}
               </AnimatePresence>
             </div>
           ))}
         </div>
       </div>
-      
-      {/* Right side */}
+
       <div className="flex items-center gap-3">
-        {/* WiFi */}
-        <div className="group relative">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#e8e8f0] cursor-pointer">
-            <path d="M5 12.55C7.38 10.14 10.55 8.5 14.12 8.5C17.69 8.5 20.86 10.14 23.24 12.55" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M1.42 9C5.07 5.38 10.23 3 16 3C21.77 3 26.93 5.38 30.58 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
-            <path d="M8.53 16.11C10.16 14.48 12.44 13.5 14.99 13.5C17.54 13.5 19.82 14.48 21.45 16.11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="15" cy="20" r="1.5" fill="currentColor" />
-          </svg>
-          <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-[rgba(13,13,26,0.95)] backdrop-blur-xl border border-[rgba(0,240,255,0.15)] rounded-lg text-xs text-[#8888aa] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            Connected to: ENSA_Network
-          </div>
-        </div>
-        
-        {/* Battery */}
-        <div className="group relative">
-          <svg width="20" height="16" viewBox="0 0 24 16" fill="none" className="text-[#e8e8f0] cursor-pointer">
-            <rect x="1" y="3" width="18" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
-            <rect x="3" y="5" width="12" height="6" rx="1" fill="#00ff88" />
-            <path d="M21 6v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-[rgba(13,13,26,0.95)] backdrop-blur-xl border border-[rgba(0,240,255,0.15)] rounded-lg text-xs text-[#8888aa] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            Battery: 87% — Optimized for performance
-          </div>
-        </div>
-        
-        {/* Date */}
-        <span className="text-[#e8e8f0] text-xs">{formatDate(time)}</span>
-        
-        {/* Time */}
-        <span className="text-[#e8e8f0] text-xs font-mono">{formatTime(time)}</span>
-        
-        {/* User avatar */}
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation()
+            addNotification({
+              title: fr ? 'Statut' : 'Status',
+              message: profile.status[lang],
+            })
+          }}
+          className="hidden h-6 items-center gap-1.5 rounded px-1.5 text-xs text-[#00ff88] transition-colors hover:bg-white/10 lg:flex"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-[#00ff88]" aria-hidden="true" />
+          Renault Technology Morocco
+        </button>
+
+        <span className="text-xs text-[#e8e8f0]">{formatDate(time)}</span>
+        <span className="font-mono text-xs text-[#e8e8f0]">{formatTime(time)}</span>
+
         <div className="relative">
           <button
-            onClick={(e) => {
-              e.stopPropagation()
+            type="button"
+            aria-label={fr ? 'Menu utilisateur' : 'User menu'}
+            onClick={(event) => {
+              event.stopPropagation()
               setShowUserMenu(!showUserMenu)
             }}
-            className="w-5 h-5 rounded-full bg-gradient-to-br from-[#00f0ff] to-[#7b2fff] flex items-center justify-center text-[8px] font-bold text-[#07070f] hover:ring-2 hover:ring-[#00f0ff] transition-all"
+            className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#00f0ff] to-[#7b2fff] text-[9px] font-bold text-[#07070f] transition-all hover:ring-2 hover:ring-[#00f0ff]"
           >
             SE
           </button>
-          
+
           <AnimatePresence>
-            {showUserMenu && (
+            {showUserMenu ? (
               <motion.div
                 initial={{ opacity: 0, y: -5, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -5, scale: 0.95 }}
-                className="absolute top-full right-0 mt-2 bg-[rgba(13,13,26,0.95)] backdrop-blur-xl border border-[rgba(0,240,255,0.15)] rounded-lg py-2 min-w-[220px] shadow-xl"
-                onClick={(e) => e.stopPropagation()}
+                className="absolute right-0 top-full mt-2 min-w-[230px] rounded-lg border border-[rgba(0,240,255,0.15)] bg-[rgba(13,13,26,0.95)] py-2 shadow-xl backdrop-blur-xl"
+                onClick={(event) => event.stopPropagation()}
               >
-                <div className="px-3 py-2 border-b border-[rgba(0,240,255,0.1)]">
-                  <div className="text-[#e8e8f0] font-medium">Soufyane Elaouni</div>
-                  <div className="text-[#8888aa] text-xs">soufyane.el3aouni@gmail.com</div>
+                <div className="border-b border-[rgba(0,240,255,0.1)] px-3 py-2">
+                  <div className="text-[#e8e8f0]">{site.name}</div>
+                  <div className="text-xs text-[#8888aa]">{site.email}</div>
                 </div>
-                <button className="w-full px-3 py-2 text-left text-[#e8e8f0] hover:bg-[rgba(0,240,255,0.1)] text-sm">
-                  System Preferences...
-                </button>
-                <div className="h-px bg-[rgba(0,240,255,0.1)] my-1" />
-                <button 
-                  className="w-full px-3 py-2 text-left text-[#ff5f57] hover:bg-[rgba(255,95,87,0.1)] text-sm"
-                  onClick={() => window.location.reload()}
+                <button
+                  type="button"
+                  onClick={() => { setShowUserMenu(false); openWindow('settings') }}
+                  className="w-full px-3 py-2 text-left text-sm text-[#e8e8f0] hover:bg-[rgba(0,240,255,0.1)]"
                 >
-                  Log Out...
+                  {fr ? 'À propos de SoufyaneOS' : 'About SoufyaneOS'}
+                </button>
+                <a
+                  href="/"
+                  className="block w-full px-3 py-2 text-left text-sm text-[#e8e8f0] hover:bg-[rgba(0,240,255,0.1)]"
+                >
+                  {fr ? 'Version CV (page complète)' : 'Printable CV (home page)'}
+                </a>
+                <div className="my-1 h-px bg-[rgba(0,240,255,0.1)]" />
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="w-full px-3 py-2 text-left text-sm text-[#e8e8f0] hover:bg-[rgba(0,240,255,0.1)]"
+                >
+                  {fr ? 'Recharger' : 'Reload'}
                 </button>
               </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
         </div>
       </div>

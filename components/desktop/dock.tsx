@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import { useDesktopStore, WindowId } from '@/lib/desktop-store'
+import { useRef, useState } from 'react'
+import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
+import { useDesktopStore, type WindowId } from '@/lib/desktop-store'
+import { site } from '@/lib/portfolio-data'
 
 interface DockItem {
   id: string
   label: string
   windowId?: WindowId
   externalUrl?: string
+  download?: boolean
   icon: React.ReactNode
   isDivider?: boolean
 }
@@ -147,7 +149,7 @@ const dockItems: DockItem[] = [
   {
     id: 'github',
     label: 'GitHub',
-    externalUrl: 'https://github.com/Soufyane12231',
+    externalUrl: site.links.github,
     icon: (
       <svg viewBox="0 0 48 48" className="w-full h-full">
         <rect x="4" y="4" width="40" height="40" rx="8" fill="#1a1a2e" />
@@ -158,11 +160,25 @@ const dockItems: DockItem[] = [
   {
     id: 'linkedin',
     label: 'LinkedIn',
-    externalUrl: 'https://www.linkedin.com/in/soufyane-elaouni-63507732a/',
+    externalUrl: site.links.linkedin,
     icon: (
       <svg viewBox="0 0 48 48" className="w-full h-full">
         <rect x="4" y="4" width="40" height="40" rx="8" fill="#0077b5" />
         <path d="M14 20v14M14 14v.01M20 34v-10a4 4 0 018 0v10M28 24v10" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    id: 'cv',
+    label: 'CV (PDF)',
+    externalUrl: site.links.cv,
+    download: true,
+    icon: (
+      <svg viewBox="0 0 48 48" className="w-full h-full">
+        <rect x="4" y="4" width="40" height="40" rx="8" fill="#1a1a2e" />
+        <path d="M16 12h11l7 7v17a2 2 0 01-2 2H16a2 2 0 01-2-2V14a2 2 0 012-2z" fill="#e8e8f0" />
+        <path d="M27 12v7h7" fill="#7b2fff" />
+        <path d="M18 26h12M18 31h9" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -182,9 +198,9 @@ const dockItems: DockItem[] = [
   },
 ]
 
-function DockIcon({ item, mouseX }: { item: DockItem; mouseX: ReturnType<typeof useMotionValue<number>> }) {
+function DockIcon({ item, mouseX }: { item: DockItem; mouseX: MotionValue<number> }) {
   const ref = useRef<HTMLDivElement>(null)
-  const { openWindow, windows, focusWindow, setNotification } = useDesktopStore()
+  const { openWindow, windowsMap, focusWindow, addNotification } = useDesktopStore()
   
   const distance = useTransform(mouseX, (val) => {
     const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 }
@@ -194,60 +210,80 @@ function DockIcon({ item, mouseX }: { item: DockItem; mouseX: ReturnType<typeof 
   const widthSync = useTransform(distance, [-150, 0, 150], [48, 72, 48])
   const width = useSpring(widthSync, { mass: 0.1, stiffness: 150, damping: 12 })
   
-  const isOpen = item.windowId ? windows[item.windowId]?.isOpen : false
-  
-  const handleClick = () => {
-    if (item.externalUrl) {
-      window.open(item.externalUrl, '_blank')
-    } else if (item.windowId) {
-      if (isOpen) {
-        focusWindow(item.windowId)
-      } else {
-        if (item.id === 'trash') {
-          setNotification('Cannot delete: soufyane.exe is a critical system process')
-        }
-        openWindow(item.windowId)
-      }
+  const isOpen = item.windowId ? windowsMap[item.windowId]?.isOpen : false
+
+  const handleWindowClick = () => {
+    if (!item.windowId) return
+    if (isOpen) {
+      focusWindow(item.windowId)
+      return
     }
+    if (item.id === 'trash') {
+      addNotification({
+        title: 'Action refused',
+        message: 'Cannot delete: soufyane.exe is a critical system process',
+      })
+    }
+    openWindow(item.windowId)
   }
   
   if (item.isDivider) {
-    return (
-      <div className="w-px h-10 bg-[rgba(255,255,255,0.2)] mx-2" />
-    )
+    return <div className="mx-2 h-10 w-px bg-[rgba(255,255,255,0.2)]" aria-hidden="true" />
   }
-  
-  return (
-    <motion.div
-      ref={ref}
-      style={{ width }}
-      className="aspect-square relative group"
-      onClick={handleClick}
-      whileTap={{ scale: 0.9 }}
-    >
+
+  const icon = (
+    <>
       {/* Tooltip */}
-      <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1 bg-[rgba(13,13,26,0.95)] backdrop-blur-xl border border-[rgba(0,240,255,0.15)] rounded-md text-xs text-[#e8e8f0] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+      <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-[rgba(0,240,255,0.15)] bg-[rgba(13,13,26,0.95)] px-3 py-1 text-xs text-[#e8e8f0] opacity-0 backdrop-blur-xl transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
         {item.label}
       </div>
-      
-      {/* Icon */}
-      <motion.div 
-        className="w-full h-full cursor-pointer rounded-xl overflow-hidden"
+
+      <motion.div
+        className="h-full w-full cursor-pointer overflow-hidden rounded-xl"
         whileHover={{ y: -8 }}
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       >
         {item.icon}
       </motion.div>
-      
-      {/* Open indicator dot */}
-      {isOpen && (
+
+      {isOpen ? (
         <motion.div
-          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#00f0ff]"
+          className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[#00f0ff]"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          exit={{ scale: 0 }}
+          aria-hidden="true"
         />
-      )}
+      ) : null}
+    </>
+  )
+
+  if (item.externalUrl) {
+    return (
+      <motion.div ref={ref} style={{ width }} className="group relative aspect-square" whileTap={{ scale: 0.9 }}>
+        <a
+          href={item.externalUrl}
+          {...(item.download
+            ? { download: site.links.cvFileName }
+            : { target: '_blank', rel: 'noopener noreferrer' })}
+          className="block h-full w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00f0ff]"
+          aria-label={item.label}
+        >
+          {icon}
+        </a>
+      </motion.div>
+    )
+  }
+
+  return (
+    <motion.div ref={ref} style={{ width }} className="group relative aspect-square" whileTap={{ scale: 0.9 }}>
+      <button
+        type="button"
+        onClick={handleWindowClick}
+        className="block h-full w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00f0ff]"
+        aria-label={item.label}
+      >
+        {icon}
+      </button>
     </motion.div>
   )
 }
@@ -258,7 +294,7 @@ export function Dock() {
   
   return (
     <motion.div
-      className="fixed bottom-2 left-1/2 -translate-x-1/2 z-40"
+      className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[100]"
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.3, type: 'spring', stiffness: 200, damping: 20 }}

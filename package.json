@@ -1,13 +1,13 @@
 {
-  "name": "my-project",
-  "version": "0.1.0",
+  "name": "soufyaneos-portfolio",
+  "version": "2.1.0",
   "private": true,
- "scripts": {
-  "dev": "next dev",
-  "build": "pnpm install --no-frozen-lockfile && next build",
-  "start": "next start",
-  "lint": "eslint ."
-},
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@hookform/resolvers": "^3.9.1",

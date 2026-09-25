@@ -1,0 +1,11 @@
+# pnpm 11+ reads its settings from pnpm-workspace.yaml instead of the
+# "pnpm" field of package.json.
+#
+# Every dependency that ships a postinstall/native build step has to be
+# reviewed explicitly, otherwise `pnpm install` fails with
+# ERR_PNPM_IGNORED_BUILDS (strictDepBuilds defaults to true).
+allowBuilds:
+  # Used by next/image on Vercel (even with unoptimized images, Next probes it).
+  sharp: true
+  # Build step is not needed for the JS fallback this project uses.
+  '@tsparticles/engine': false

@@ -2,71 +2,107 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useLanguage } from '@/components/portfolio/language-provider'
+import { profile, site } from '@/lib/portfolio-data'
 
 export function ContactWindow() {
+  const { lang } = useLanguage()
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
-  const handleCopy = (text: string, field: string) => {
-    navigator.clipboard.writeText(text)
-    setCopiedField(field)
-    setTimeout(() => setCopiedField(null), 2000)
+  const handleCopy = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(field)
+      window.setTimeout(() => setCopiedField(null), 2000)
+    } catch {
+      /* clipboard blocked — the address stays selectable */
+    }
   }
 
-  const mailtoLink = `mailto:soufyane.el3aouni@gmail.com?subject=Hello Soufyane&body=Hi Soufyane,%0D%0A%0D%0A`
+  const mailtoLink = `mailto:${site.email}?subject=${encodeURIComponent(
+    lang === 'fr' ? 'Opportunité — Mécatronique / Automatisme' : 'Opportunity — Mechatronics / Automation',
+  )}&body=${encodeURIComponent(
+    lang === 'fr'
+      ? `Bonjour Soufyane,\n\nJe vous contacte au sujet de`
+      : `Hi Soufyane,\n\nI am reaching out about`,
+  )}`
+
+  const channels = [
+    { icon: '📧', value: site.email, field: 'email' },
+    { icon: '📱', value: site.phone, field: 'phone' },
+  ]
+
+  const links = [
+    { icon: '💼', label: site.links.linkedinLabel, href: site.links.linkedin, field: 'linkedin' },
+    { icon: '🐙', label: 'github.com/Soufyane12231', href: site.links.github, field: 'github' },
+  ]
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a12] font-mono text-sm">
-      <div className="flex-1 p-4 overflow-auto">
-        <div className="text-[#00ff88] mb-2">soufyane@SoufyaneOS:~$ ./contact.sh</div>
-        <div className="text-[#00f0ff] mb-4">Initializing contact protocol...</div>
-        <div className="text-[#333] mb-4">━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+    <div className="flex h-full flex-col overflow-auto bg-[#0a0a12] font-mono text-sm">
+      <div className="p-4">
+        <div className="mb-2 text-[#00ff88]">soufyane@SoufyaneOS:~$ ./contact.sh</div>
+        <div className="mb-4 text-[#00f0ff]">Initializing contact protocol...</div>
+        <div className="mb-4 h-px w-full bg-white/10" aria-hidden="true" />
 
-        <div className="text-[#e8e8f0] mb-4">Direct channels:</div>
+        <div className="mb-3 text-[#e8e8f0]">
+          {lang === 'fr' ? 'Canaux directs :' : 'Direct channels:'}
+        </div>
 
-        <div className="space-y-3 mb-6">
-          {[
-            { icon: '📧', label: 'soufyane.el3aouni@gmail.com', field: 'email' },
-            { icon: '📱', label: '+212 772 257 679', field: 'phone' },
-          ].map((item) => (
+        <div className="mb-6 space-y-3">
+          {channels.map((item) => (
             <div key={item.field} className="flex items-center gap-2">
               <span className="text-[#00f0ff]">&gt;</span>
-              <span>{item.icon}</span>
-              <span className="text-[#e8e8f0]">{item.label}</span>
+              <span aria-hidden="true">{item.icon}</span>
+              <span className="text-[#e8e8f0]">{item.value}</span>
               <button
-                onClick={() => handleCopy(item.label, item.field)}
-                className="text-[#555] hover:text-[#00f0ff] transition-colors text-xs"
+                type="button"
+                onClick={() => handleCopy(item.value, item.field)}
+                className="flex min-h-6 items-center rounded px-1 text-xs text-[#8b91a3] transition-colors hover:text-[#00f0ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00f0ff]"
               >
-                {copiedField === item.field ? '[copied!]' : '[click to copy]'}
+                [{copiedField === item.field ? (lang === 'fr' ? 'copié !' : 'copied!') : lang === 'fr' ? 'cliquer pour copier' : 'click to copy'}]
               </button>
+            </div>
+          ))}
+
+          {links.map((item) => (
+            <div key={item.field} className="flex items-center gap-2">
+              <span className="text-[#00f0ff]">&gt;</span>
+              <span aria-hidden="true">{item.icon}</span>
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-h-6 items-center text-[#e8e8f0] transition-colors hover:text-[#00f0ff]"
+              >
+                {item.label}
+              </a>
+              <span className="text-xs text-[#8b91a3]">[open →]</span>
             </div>
           ))}
 
           <div className="flex items-center gap-2">
             <span className="text-[#00f0ff]">&gt;</span>
-            <span>💼</span>
-            <a href="https://www.linkedin.com/in/soufyane-elaouni-63507732a/" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#00f0ff] transition-colors">
-              linkedin.com/in/soufyane-elaouni-63507732a
+            <span aria-hidden="true">📄</span>
+            <a
+              href={site.links.cv}
+              download
+              className="flex min-h-6 items-center text-[#e8e8f0] transition-colors hover:text-[#00f0ff]"
+            >
+              cv/elaouni-soufyane-cv.pdf
             </a>
-            <span className="text-[#555] text-xs">[open →]</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[#00f0ff]">&gt;</span>
-            <span>🐙</span>
-            <a href="https://github.com/Soufyane12231" target="_blank" rel="noopener noreferrer" className="text-[#e8e8f0] hover:text-[#00f0ff] transition-colors">
-              github.com/Soufyane12231
-            </a>
-            <span className="text-[#555] text-xs">[open →]</span>
+            <span className="text-xs text-[#8b91a3]">[download]</span>
           </div>
         </div>
 
-        <div className="text-[#333] mb-6">━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+        <div className="mb-4 h-px w-full bg-white/10" aria-hidden="true" />
 
-        <div className="text-[#e8e8f0] mb-4">Send a message:</div>
+        <div className="mb-4 text-[#e8e8f0]">
+          {lang === 'fr' ? 'Envoyer un message :' : 'Send a message:'}
+        </div>
 
         <motion.a
           href={mailtoLink}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[rgba(0,240,255,0.1)] border border-[rgba(0,240,255,0.3)] rounded text-[#00f0ff] hover:bg-[rgba(0,240,255,0.2)] transition-colors"
+          className="inline-flex items-center gap-2 rounded border border-[rgba(0,240,255,0.3)] bg-[rgba(0,240,255,0.1)] px-4 py-2 text-[#00f0ff] transition-colors hover:bg-[rgba(0,240,255,0.2)]"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -74,14 +110,17 @@ export function ContactWindow() {
           [▶ open_email_client()]
         </motion.a>
 
-        <div className="mt-2 text-[#555] text-xs">
-          → Opens your default email app with my address pre-filled
-        </div>
+        <p className="mt-3 text-xs leading-relaxed text-[#9aa0b5]">
+          {lang === 'fr'
+            ? 'Ouvre votre application e-mail avec mon adresse pré-remplie.'
+            : 'Opens your email app with my address pre-filled.'}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-[#8b91a3]">{profile.availability[lang]}</p>
 
         <div className="mt-6 flex items-center">
           <span className="text-[#00ff88]">soufyane@SoufyaneOS:~$ </span>
           <motion.span
-            className="w-2 h-4 bg-[#00ff88] ml-1"
+            className="ml-1 h-4 w-2 bg-[#00ff88]"
             animate={{ opacity: [1, 0] }}
             transition={{ duration: 0.53, repeat: Infinity }}
           />

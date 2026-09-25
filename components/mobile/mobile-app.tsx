@@ -1,355 +1,295 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLanguage } from '@/components/portfolio/language-provider'
+import {
+  certifications,
+  education,
+  experiences,
+  profile,
+  projects,
+  site,
+  skillGroups,
+  spokenLanguages,
+  t,
+} from '@/lib/portfolio-data'
 
-type MobileTab = 'home' | 'projects' | 'skills' | 'experience' | 'contact'
+type Tab = 'home' | 'experience' | 'projects' | 'skills' | 'contact'
 
 export function MobileApp() {
-  const [activeTab, setActiveTab] = useState<MobileTab>('home')
-  const [activePanel, setActivePanel] = useState<string | null>(null)
-  
-  const apps = [
-    { id: 'about', label: 'About Me', icon: '👤' },
-    { id: 'projects', label: 'Projects', icon: '📁' },
-    { id: 'skills', label: 'Skills', icon: '⚡' },
-    { id: 'experience', label: 'Experience', icon: '💼' },
-    { id: 'certificates', label: 'Certificates', icon: '🏆' },
-    { id: 'contact', label: 'Contact', icon: '📬' },
-    { id: 'linkedin', label: 'LinkedIn', icon: '💼', external: 'https://linkedin.com/in/soufyane-elaouni' },
-    { id: 'github', label: 'GitHub', icon: '🐙', external: 'https://github.com/soufyane-elaouni' },
+  const { lang, toggleLang } = useLanguage()
+  const [activeTab, setActiveTab] = useState<Tab>('home')
+
+  const tabs: { id: Tab; label: string; icon: string }[] = [
+    { id: 'home', label: lang === 'fr' ? 'Profil' : 'Profile', icon: '👤' },
+    { id: 'experience', label: lang === 'fr' ? 'Expérience' : 'Experience', icon: '💼' },
+    { id: 'projects', label: lang === 'fr' ? 'Projets' : 'Projects', icon: '📁' },
+    { id: 'skills', label: lang === 'fr' ? 'Compétences' : 'Skills', icon: '⚡' },
+    { id: 'contact', label: lang === 'fr' ? 'Contact' : 'Contact', icon: '📬' },
   ]
-  
+
   return (
-    <div className="min-h-screen bg-[#07070f] flex flex-col">
-      {/* Status bar */}
-      <div className="h-12 flex items-center justify-between px-4 bg-[rgba(0,0,0,0.3)]">
-        <span className="text-[#e8e8f0] text-sm font-semibold">SoufyaneOS</span>
-        <div className="flex items-center gap-2 text-[#8888aa] text-xs">
-          <span>87%</span>
-          <svg width="20" height="12" viewBox="0 0 24 14" fill="none">
-            <rect x="1" y="2" width="18" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
-            <rect x="3" y="4" width="12" height="6" rx="1" fill="#00ff88" />
-            <path d="M21 5v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </div>
-      </div>
-      
-      {/* Banner */}
-      <div className="px-4 py-2 bg-[rgba(0,240,255,0.1)] border-b border-[rgba(0,240,255,0.1)]">
-        <p className="text-[#00f0ff] text-xs text-center">
-          Full desktop experience on larger screens
-        </p>
-      </div>
-      
-      {/* Main content */}
-      <div className="flex-1 overflow-auto p-4">
+    <div className="flex min-h-screen flex-col bg-[#07070f] pb-20 text-[#e8e8f0]">
+      <header className="flex items-center justify-between border-b border-white/5 px-4 py-3">
+        <span className="font-mono text-xs text-[#00f0ff]">SoufyaneOS 2.1</span>
+        <button
+          type="button"
+          onClick={toggleLang}
+          className="rounded border border-white/10 px-2 py-1 font-mono text-[10px] text-[#9aa0b5]"
+        >
+          {lang === 'fr' ? 'EN' : 'FR'}
+        </button>
+      </header>
+
+      <main className="flex-1 px-4 py-5">
         <AnimatePresence mode="wait">
-          {activeTab === 'home' && (
-            <motion.div
-              key="home"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              {/* Profile header */}
-              <div className="flex flex-col items-center mb-8 pt-4">
-                <motion.div
-                  className="w-24 h-24 rounded-full bg-gradient-to-br from-[#0d0d1a] to-[#1a1a2e] flex items-center justify-center border-2 border-[#00f0ff] mb-4"
-                  animate={{ 
-                    boxShadow: [
-                      '0 0 20px rgba(0, 240, 255, 0.3)',
-                      '0 0 40px rgba(0, 240, 255, 0.5)',
-                      '0 0 20px rgba(0, 240, 255, 0.3)',
-                    ]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.18 }}
+          >
+            {activeTab === 'home' ? (
+              <div>
+                <h1 className="text-2xl font-semibold text-white">{site.name}</h1>
+                <p className="mt-1 text-sm text-[#00f0ff]">{t(site.role, lang)}</p>
+                <p className="text-xs text-[#9aa0b5]">{t(site.specialty, lang)}</p>
+
+                <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-[rgba(0,255,136,0.25)] bg-[rgba(0,255,136,0.08)] px-3 py-1.5 text-[11px] text-[#6effbb]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#00ff88]" aria-hidden="true" />
+                  {t(profile.status, lang)}
+                </p>
+
+                <p className="mt-4 text-sm leading-relaxed text-[#c8ccdb]">{t(profile.summary, lang)}</p>
+
+                <section className="mt-6" aria-labelledby="m-edu">
+                  <h2 id="m-edu" className="mb-2 text-xs uppercase tracking-wider text-[#8b91a3]">
+                    {lang === 'fr' ? 'Formation' : 'Education'}
+                  </h2>
+                  <ul className="space-y-2">
+                    {education.map((item) => (
+                      <li key={item.id} className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                        <p className="text-sm font-medium text-white">{t(item.title, lang)}</p>
+                        <p className="text-xs text-[#9aa0b5]">
+                          {t(item.school, lang)} · {t(item.period, lang)}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <section className="mt-6" aria-labelledby="m-langs">
+                  <h2 id="m-langs" className="mb-2 text-xs uppercase tracking-wider text-[#8b91a3]">
+                    {lang === 'fr' ? 'Langues' : 'Languages'}
+                  </h2>
+                  <ul className="space-y-1.5">
+                    {spokenLanguages.map((item) => (
+                      <li key={item.name.en} className="flex justify-between text-sm">
+                        <span>
+                          {item.flag} {t(item.name, lang)}
+                        </span>
+                        <span className="text-xs text-[#9aa0b5]">{t(item.level, lang)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <Link
+                  href="/"
+                  className="mt-6 block rounded-lg border border-[rgba(0,240,255,0.25)] bg-[rgba(0,240,255,0.08)] px-4 py-3 text-center text-sm text-[#00f0ff]"
                 >
-                  <span className="text-3xl font-bold text-[#00f0ff]">SE</span>
-                </motion.div>
-                <h1 className="text-[#e8e8f0] text-xl font-semibold">Soufyane Elaouni</h1>
-                <p className="text-[#8888aa] text-sm">Ingénieur Mécatronique</p>
-                <p className="text-[#555] text-xs">ENSA Tétouan</p>
+                  {lang === 'fr' ? 'Version CV complète →' : 'Full printable CV →'}
+                </Link>
               </div>
-              
-              {/* App grid */}
-              <div className="grid grid-cols-4 gap-4">
-                {apps.map((app, index) => (
-                  <motion.button
-                    key={app.id}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => {
-                      if (app.external) {
-                        window.open(app.external, '_blank')
-                      } else {
-                        setActivePanel(app.id)
-                      }
-                    }}
-                    className="flex flex-col items-center gap-1"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-[rgba(0,240,255,0.1)] border border-[rgba(0,240,255,0.15)] flex items-center justify-center text-2xl">
-                      {app.icon}
+            ) : null}
+
+            {activeTab === 'experience' ? (
+              <ol className="space-y-3">
+                {experiences.map((exp) => (
+                  <li key={exp.id} className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                    <p className="font-mono text-[11px]" style={{ color: exp.color }}>
+                      {t(exp.period, lang)} {exp.current ? '●' : ''}
+                    </p>
+                    <h2 className="mt-1 text-sm font-semibold text-white">{t(exp.role, lang)}</h2>
+                    <p className="text-xs" style={{ color: exp.color }}>
+                      {t(exp.company, lang)}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-[#8b91a3]">{t(exp.location, lang)}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-[#c8ccdb]">{t(exp.summary, lang)}</p>
+                    <ul className="mt-2 space-y-1">
+                      {exp.bullets.map((bullet, index) => (
+                        <li key={index} className="flex gap-2 text-xs leading-relaxed text-[#9aa0b5]">
+                          <span className="text-[#00ff88]" aria-hidden="true">
+                            ✓
+                          </span>
+                          <span>{t(bullet, lang)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {exp.stack.map((tech) => (
+                        <span
+                          key={tech}
+                          className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[9px] text-[#8b91a6]"
+                        >
+                          {tech}
+                        </span>
+                      ))}
                     </div>
-                    <span className="text-[#e8e8f0] text-[10px]">{app.label}</span>
-                  </motion.button>
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+
+            {activeTab === 'projects' ? (
+              <div className="space-y-3">
+                {projects.map((project) => (
+                  <article key={project.id} className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                    <h2 className="text-sm font-semibold text-white">
+                      <span className="mr-1.5" aria-hidden="true">
+                        {project.icon}
+                      </span>
+                      {t(project.title, lang)}
+                    </h2>
+                    <p className="mt-1 text-[11px] uppercase tracking-wider text-[#8b91a3]">
+                      {t(project.category, lang)}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-[#c8ccdb]">{t(project.description, lang)}</p>
+                    <ul className="mt-2 space-y-1">
+                      {project.highlightsList.map((item, index) => (
+                        <li key={index} className="flex gap-2 text-xs text-[#9aa0b5]">
+                          <span className="text-[#00f0ff]" aria-hidden="true">
+                            →
+                          </span>
+                          <span>{t(item, lang)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {project.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[9px] text-[#8b91a6]"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </article>
                 ))}
               </div>
-            </motion.div>
-          )}
-          
-          {activeTab === 'projects' && <MobileProjects />}
-          {activeTab === 'skills' && <MobileSkills />}
-          {activeTab === 'experience' && <MobileExperience />}
-          {activeTab === 'contact' && <MobileContact />}
-        </AnimatePresence>
-      </div>
-      
-      {/* Panel overlay */}
-      <AnimatePresence>
-        {activePanel && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[rgba(0,0,0,0.8)] z-50"
-            onClick={() => setActivePanel(null)}
-          >
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 30 }}
-              className="absolute bottom-0 left-0 right-0 top-20 bg-[#0d0d1a] rounded-t-3xl overflow-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Handle */}
-              <div className="flex justify-center py-3">
-                <div className="w-10 h-1 bg-[#333] rounded-full" />
+            ) : null}
+
+            {activeTab === 'skills' ? (
+              <div className="space-y-4">
+                {skillGroups.map((group) => (
+                  <section key={group.id}>
+                    <h2 className="mb-1.5 text-sm font-semibold text-[#00f0ff]">
+                      <span className="mr-1.5" aria-hidden="true">
+                        {group.icon}
+                      </span>
+                      {t(group.title, lang)}
+                    </h2>
+                    <ul className="flex flex-wrap gap-1.5">
+                      {group.items.map((item) => (
+                        <li
+                          key={item}
+                          className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-0.5 font-mono text-[10px] text-[#a8aec2]"
+                        >
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+
+                <section>
+                  <h2 className="mb-1.5 text-sm font-semibold text-[#00f0ff]">
+                    Certifications
+                  </h2>
+                  <ul className="space-y-1.5">
+                    {certifications.map((cert) => (
+                      <li key={cert.id} className="flex justify-between gap-2 text-xs text-[#c8ccdb]">
+                        <span>{t(cert.title, lang)}</span>
+                        <span className="shrink-0 font-mono text-[10px] text-[#8b91a3]">
+                          {cert.issuer} · {cert.year}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               </div>
-              
-              {/* Close button */}
-              <button
-                onClick={() => setActivePanel(null)}
-                className="absolute top-4 right-4 p-2 text-[#8888aa]"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </button>
-              
-              {/* Panel content */}
-              <div className="p-4">
-                {activePanel === 'about' && <MobilePanelAbout />}
-                {activePanel === 'projects' && <MobileProjects />}
-                {activePanel === 'skills' && <MobileSkills />}
-                {activePanel === 'experience' && <MobileExperience />}
-                {activePanel === 'certificates' && <MobileCertificates />}
-                {activePanel === 'contact' && <MobileContact />}
+            ) : null}
+
+            {activeTab === 'contact' ? (
+              <div className="space-y-3">
+                <p className="text-sm leading-relaxed text-[#c8ccdb]">{t(profile.availability, lang)}</p>
+
+                <a
+                  href={`mailto:${site.email}`}
+                  className="block rounded-lg bg-[#00f0ff] px-4 py-3 text-center text-sm font-medium text-[#04121a]"
+                >
+                  {site.email}
+                </a>
+                <a
+                  href={site.phoneHref}
+                  className="block rounded-lg border border-white/10 px-4 py-3 text-center font-mono text-sm"
+                >
+                  {site.phone}
+                </a>
+                <a
+                  href={site.links.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-white/10 px-4 py-3 text-center font-mono text-sm"
+                >
+                  {site.links.linkedinLabel}
+                </a>
+                <a
+                  href={site.links.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-white/10 px-4 py-3 text-center font-mono text-sm"
+                >
+                  github.com/Soufyane12231
+                </a>
+                <a
+                  href={site.links.cv}
+                  download
+                  className="block rounded-lg border border-[rgba(0,240,255,0.25)] bg-[rgba(0,240,255,0.08)] px-4 py-3 text-center text-sm text-[#00f0ff]"
+                >
+                  {lang === 'fr' ? 'Télécharger le CV' : 'Download the CV'}
+                </a>
               </div>
-            </motion.div>
+            ) : null}
           </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* Tab bar */}
-      <div className="h-20 bg-[rgba(13,13,26,0.95)] backdrop-blur-xl border-t border-[rgba(0,240,255,0.08)] flex items-center justify-around px-4 pb-4">
-        {[
-          { id: 'home', label: 'Home', icon: '🏠' },
-          { id: 'projects', label: 'Projects', icon: '📁' },
-          { id: 'skills', label: 'Skills', icon: '⚡' },
-          { id: 'experience', label: 'Exp', icon: '💼' },
-          { id: 'contact', label: 'Contact', icon: '📬' },
-        ].map((tab) => (
+        </AnimatePresence>
+      </main>
+
+      <nav
+        aria-label={lang === 'fr' ? 'Navigation' : 'Navigation'}
+        className="fixed bottom-0 left-0 right-0 flex border-t border-white/5 bg-[#0a0a12]/95 backdrop-blur-xl"
+      >
+        {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as MobileTab)}
-            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors ${
-              activeTab === tab.id 
-                ? 'text-[#00f0ff]' 
-                : 'text-[#555]'
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            aria-current={activeTab === tab.id ? 'page' : undefined}
+            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] transition-colors ${
+              activeTab === tab.id ? 'text-[#00f0ff]' : 'text-[#8b91a3]'
             }`}
           >
-            <span className="text-xl">{tab.icon}</span>
-            <span className="text-[10px]">{tab.label}</span>
+            <span className="text-base" aria-hidden="true">
+              {tab.icon}
+            </span>
+            {tab.label}
           </button>
         ))}
-      </div>
-    </div>
-  )
-}
-
-function MobilePanelAbout() {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-[#00f0ff] text-lg font-semibold">About Me</h2>
-      <p className="text-[#e8e8f0] leading-relaxed text-sm">
-        4th-year engineering student at ENSA Tétouan with a passion for 
-        building intelligent embedded systems. I bridge the gap between 
-        hardware and software — from bare-metal C++ on STM32 to Extended 
-        Kalman Filters in Python.
-      </p>
-      
-      <div className="flex flex-wrap gap-2">
-        {['Tétouan, Maroc', 'ENSA Tétouan', '4ème Année'].map((tag) => (
-          <span key={tag} className="px-3 py-1 bg-[rgba(0,240,255,0.1)] rounded-full text-xs text-[#00f0ff]">
-            {tag}
-          </span>
-        ))}
-      </div>
-      
-      <div className="pt-4 space-y-3">
-        <h3 className="text-[#8888aa] text-xs uppercase">Languages</h3>
-        {[
-          { lang: 'Arabic', level: 100 },
-          { lang: 'French', level: 85 },
-          { lang: 'English', level: 85 },
-        ].map((l) => (
-          <div key={l.lang}>
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-[#e8e8f0]">{l.lang}</span>
-              <span className="text-[#00f0ff]">{l.level}%</span>
-            </div>
-            <div className="h-1.5 bg-[rgba(0,240,255,0.1)] rounded-full">
-              <div className="h-full bg-gradient-to-r from-[#00f0ff] to-[#7b2fff] rounded-full" style={{ width: `${l.level}%` }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function MobileProjects() {
-  const projects = [
-    { title: 'Multiplexed Vehicle Prototype', icon: '🚗', tags: ['STM32', 'CAN Bus'] },
-    { title: 'Battery Management System', icon: '🔋', tags: ['Python', 'EKF'] },
-    { title: 'Sliding Mode Control on FPGA', icon: '⚙️', tags: ['FPGA', 'VHDL'] },
-    { title: 'Smart Irrigation System', icon: '🌱', tags: ['ESP32', 'IoT'] },
-  ]
-  
-  return (
-    <div className="space-y-4">
-      <h2 className="text-[#00f0ff] text-lg font-semibold">Projects</h2>
-      {projects.map((p, i) => (
-        <div key={i} className="p-4 bg-[rgba(0,0,0,0.3)] rounded-xl border-l-2 border-[#00f0ff]">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xl">{p.icon}</span>
-            <span className="text-[#e8e8f0] font-medium text-sm">{p.title}</span>
-          </div>
-          <div className="flex gap-2">
-            {p.tags.map((tag) => (
-              <span key={tag} className="px-2 py-0.5 bg-[rgba(0,240,255,0.1)] rounded text-[10px] text-[#00f0ff]">
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function MobileSkills() {
-  const skills = [
-    { name: 'STM32', level: 90 },
-    { name: 'ESP32', level: 88 },
-    { name: 'CAN Bus', level: 85 },
-    { name: 'Python', level: 80 },
-    { name: 'MATLAB', level: 75 },
-    { name: 'TIA Portal', level: 70 },
-  ]
-  
-  return (
-    <div className="space-y-4">
-      <h2 className="text-[#00f0ff] text-lg font-semibold">Skills</h2>
-      {skills.map((s) => (
-        <div key={s.name}>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-[#e8e8f0]">{s.name}</span>
-            <span className="text-[#00f0ff]">{s.level}%</span>
-          </div>
-          <div className="h-2 bg-[rgba(0,240,255,0.1)] rounded-full">
-            <motion.div 
-              className="h-full bg-gradient-to-r from-[#00f0ff] to-[#7b2fff] rounded-full" 
-              initial={{ width: 0 }}
-              animate={{ width: `${s.level}%` }}
-              transition={{ duration: 0.8 }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function MobileExperience() {
-  const experiences = [
-    { title: 'Industrial Automation Intern', company: 'LafargeHolcim', date: '2025' },
-    { title: 'Head of Training', company: 'Mechatronics Club', date: '2025–Now' },
-    { title: 'Co-Organizer', company: 'National Robotics Competition', date: '2024–2025' },
-  ]
-  
-  return (
-    <div className="space-y-4">
-      <h2 className="text-[#00f0ff] text-lg font-semibold">Experience</h2>
-      {experiences.map((e, i) => (
-        <div key={i} className="p-4 bg-[rgba(0,0,0,0.3)] rounded-xl">
-          <div className="text-[#00ff88] text-xs mb-1">{e.date}</div>
-          <div className="text-[#e8e8f0] font-medium">{e.title}</div>
-          <div className="text-[#8888aa] text-sm">{e.company}</div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function MobileCertificates() {
-  const certs = [
-    { title: 'Electrical Engineering Job Simulation', issuer: 'GE Aerospace' },
-    { title: 'Working with the OpenAI API', issuer: 'DataCamp' },
-    { title: 'Industrial Robotics ABB', issuer: 'Udemy' },
-    { title: 'Excel Macros & VBA', issuer: 'Udemy' },
-  ]
-  
-  return (
-    <div className="space-y-4">
-      <h2 className="text-[#00f0ff] text-lg font-semibold">Certificates</h2>
-      {certs.map((c, i) => (
-        <div key={i} className="p-4 bg-[rgba(0,0,0,0.3)] rounded-xl flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[rgba(0,240,255,0.1)] flex items-center justify-center">
-            🏆
-          </div>
-          <div>
-            <div className="text-[#e8e8f0] font-medium text-sm">{c.title}</div>
-            <div className="text-[#8888aa] text-xs">{c.issuer}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function MobileContact() {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-[#00f0ff] text-lg font-semibold">Contact</h2>
-      
-      <a href="mailto:soufyane.el3aouni@gmail.com" className="flex items-center gap-3 p-4 bg-[rgba(0,0,0,0.3)] rounded-xl">
-        <span className="text-xl">📧</span>
-        <span className="text-[#e8e8f0] text-sm">soufyane.el3aouni@gmail.com</span>
-      </a>
-      
-      <a href="tel:+212772257679" className="flex items-center gap-3 p-4 bg-[rgba(0,0,0,0.3)] rounded-xl">
-        <span className="text-xl">📱</span>
-        <span className="text-[#e8e8f0] text-sm">+212 772 257 679</span>
-      </a>
-      
-      <a href="https://linkedin.com/in/soufyane-elaouni" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-[rgba(0,0,0,0.3)] rounded-xl">
-        <span className="text-xl">💼</span>
-        <span className="text-[#e8e8f0] text-sm">LinkedIn</span>
-      </a>
+      </nav>
     </div>
   )
 }

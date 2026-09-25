@@ -1,271 +1,201 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useLanguage } from '@/components/portfolio/language-provider'
+import { projects, t, type Project } from '@/lib/portfolio-data'
 
-interface Project {
-  id: string
-  icon: string
-  title: string
-  tags: { label: string; color: string }[]
-  description: string
-  details: string
-  results: string[]
-  stars: number
-  category: string
-}
+type Filter = 'all' | 'work' | 'school'
 
-const projects: Project[] = [
-  {
-    id: 'vehicle',
-    icon: '🚗',
-    title: 'Multiplexed Vehicle Prototype & HIL Bench',
-    tags: [
-      { label: 'STM32', color: '#00ff88' },
-      { label: 'ESP32', color: '#00ff88' },
-      { label: 'CAN Bus 500kbps', color: '#00f0ff' },
-      { label: 'C++', color: '#7b2fff' },
-      { label: 'RFID', color: '#00f0ff' },
-      { label: 'ADAS', color: '#7b2fff' },
-    ],
-    description: 'Dual-ECU automotive architecture with CAN bus communication, ADAS frame prioritization, and RFID authentication.',
-    details: 'Designed and implemented a complete automotive prototype featuring dual-ECU architecture communicating over CAN bus at 500kbps. Integrated ADAS functionalities with frame prioritization and RFID-based authentication system. Validated through Hardware-in-the-Loop testing.',
-    results: ['CAN error < 0.1%', 'Latency < 50ms', 'HIL validated'],
-    stars: 5,
-    category: 'Automotive',
-  },
-  {
-    id: 'bms',
-    icon: '🔋',
-    title: 'Battery Management System — EV',
-    tags: [
-      { label: 'Python', color: '#7b2fff' },
-      { label: 'MATLAB/Simulink', color: '#ff9500' },
-      { label: 'EKF', color: '#00f0ff' },
-      { label: 'Li-ion', color: '#00ff88' },
-      { label: 'SOC Estimation', color: '#7b2fff' },
-    ],
-    description: 'Extended Kalman Filter vs Coulomb Counting for Li-ion SOC estimation. Equivalent circuit modeled in Simulink.',
-    details: 'Developed a comprehensive BMS solution comparing EKF and Coulomb Counting methods for State of Charge estimation. Built an equivalent circuit model in MATLAB/Simulink for accurate battery behavior simulation.',
-    results: ['~40% error reduction', 'Real-time capable', 'Simulink validated'],
-    stars: 5,
-    category: 'Energy Systems',
-  },
-  {
-    id: 'smc',
-    icon: '⚙️',
-    title: 'Sliding Mode Control on FPGA',
-    tags: [
-      { label: 'FPGA', color: '#00ff88' },
-      { label: 'VHDL', color: '#00ff88' },
-      { label: 'SMC', color: '#7b2fff' },
-      { label: 'Nonlinear Control', color: '#00f0ff' },
-      { label: 'Real-time', color: '#ff9500' },
-    ],
-    description: 'Robust SMC controller for ball-on-rail nonlinear system implemented on FPGA. Validated on physical bench.',
-    details: 'Implemented a Sliding Mode Controller in VHDL on FPGA for a nonlinear ball-on-rail system. Achieved robust stabilization with chattering reduction through boundary layer technique.',
-    results: ['Stabilization < 300ms', 'Physical bench validated', 'Chattering minimized'],
-    stars: 5,
-    category: 'Control Systems',
-  },
-  {
-    id: 'irrigation',
-    icon: '🌱',
-    title: 'Smart Irrigation System',
-    tags: [
-      { label: 'ESP32', color: '#00ff88' },
-      { label: 'Python', color: '#7b2fff' },
-      { label: 'IoT', color: '#00f0ff' },
-      { label: 'Power BI', color: '#ff9500' },
-      { label: 'Sensors', color: '#00ff88' },
-    ],
-    description: 'Adaptive IoT irrigation with soil moisture monitoring and ML-based decision logic. Live Power BI dashboard.',
-    details: 'Built a complete IoT irrigation system using ESP32 with multiple soil moisture sensors. Implemented ML-based watering decisions and real-time monitoring through Power BI dashboards.',
-    results: ['25% water reduction', 'Live dashboard', 'ML-optimized'],
-    stars: 4,
-    category: 'IoT',
-  },
+const filters: { id: Filter; icon: string; fr: string; en: string }[] = [
+  { id: 'all', icon: '📁', fr: 'Tous les projets', en: 'All projects' },
+  { id: 'work', icon: '🚗', fr: 'Projets de stage', en: 'Internship projects' },
+  { id: 'school', icon: '🎓', fr: "Projets d'école", en: 'School projects' },
 ]
 
-const categories = ['All Projects', 'Automotive', 'Energy Systems', 'IoT', 'Control Systems']
-
 export function ProjectsWindow() {
-  const [activeCategory, setActiveCategory] = useState('All Projects')
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  
-  const filteredProjects = activeCategory === 'All Projects' 
-    ? projects 
-    : projects.filter(p => p.category === activeCategory)
-  
+  const { lang } = useLanguage()
+  const [filter, setFilter] = useState<Filter>('all')
+  const [selected, setSelected] = useState<Project | null>(null)
+
+  const visible = filter === 'all' ? projects : projects.filter((project) => project.context === filter)
+
+  // The project detail is a real modal inside the window: Escape closes it and
+  // focus returns to the card that opened it.
+  const openerRef = useRef<HTMLElement | null>(null)
+  const detailRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!selected) return
+    openerRef.current = document.activeElement as HTMLElement | null
+    detailRef.current?.focus()
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        event.stopPropagation()
+        setSelected(null)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      openerRef.current?.focus?.()
+    }
+  }, [selected])
+
   return (
     <div className="flex h-full">
-      {/* Sidebar */}
-      <div className="w-48 border-r border-[rgba(0,240,255,0.08)] p-3 shrink-0">
-        <div className="text-[#555] text-xs uppercase tracking-wider mb-2 px-2">
-          Favorites
+      <nav
+        aria-label={lang === 'fr' ? 'Filtrer les projets' : 'Filter projects'}
+        className="w-48 shrink-0 border-r border-[rgba(0,240,255,0.08)] p-3"
+      >
+        <div className="mb-2 px-2 text-xs uppercase tracking-wider text-[#8b91a3]">
+          {lang === 'fr' ? 'Catégories' : 'Categories'}
         </div>
-        {categories.map((cat) => (
+        {filters.map((item) => (
           <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-              activeCategory === cat 
-                ? 'bg-[rgba(0,240,255,0.15)] text-[#00f0ff]' 
-                : 'text-[#e8e8f0] hover:bg-[rgba(255,255,255,0.05)]'
+            key={item.id}
+            type="button"
+            onClick={() => setFilter(item.id)}
+            aria-current={filter === item.id}
+            className={`mb-1 w-full rounded-md px-3 py-1.5 text-left text-sm transition-colors ${
+              filter === item.id
+                ? 'bg-[rgba(0,240,255,0.15)] text-[#00f0ff]'
+                : 'text-[#e8e8f0] hover:bg-white/5'
             }`}
           >
-            {cat === 'All Projects' ? '📁 ' : ''}
-            {cat === 'Automotive' ? '🚗 ' : ''}
-            {cat === 'Energy Systems' ? '🔋 ' : ''}
-            {cat === 'IoT' ? '🌱 ' : ''}
-            {cat === 'Control Systems' ? '⚙️ ' : ''}
-            {cat}
-            {cat === 'All Projects' && ` (${projects.length})`}
+            <span className="mr-1" aria-hidden="true">
+              {item.icon}
+            </span>
+            {t({ fr: item.fr, en: item.en }, lang)}
           </button>
         ))}
-      </div>
-      
-      {/* Main content */}
-      <div className="flex-1 p-4 overflow-auto">
-        <div className="grid grid-cols-2 gap-4">
-          {filteredProjects.map((project, index) => (
-            <motion.div
+        <div className="mt-4 px-2 text-[11px] text-[#8b91a3]">
+          {visible.length} {lang === 'fr' ? 'projets' : 'projects'}
+        </div>
+      </nav>
+
+      <div className="flex-1 overflow-auto p-4">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          {visible.map((project, index) => (
+            <motion.button
+              type="button"
               key={project.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-[rgba(0,0,0,0.3)] rounded-lg border-l-2 border-[#00f0ff] p-4 hover:bg-[rgba(0,240,255,0.05)] transition-colors cursor-pointer"
-              onClick={() => setSelectedProject(project)}
+              transition={{ delay: index * 0.08 }}
+              onClick={() => setSelected(project)}
+              className="rounded-lg border-l-2 border-[#00f0ff] bg-[rgba(0,0,0,0.3)] p-4 text-left transition-colors hover:bg-[rgba(0,240,255,0.05)]"
             >
-              {/* Header */}
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">{project.icon}</span>
-                <h3 className="text-[#e8e8f0] font-semibold font-mono text-sm leading-tight">
-                  {project.title}
+              <div className="mb-2 flex items-start gap-2">
+                <span className="text-xl" aria-hidden="true">
+                  {project.icon}
+                </span>
+                <h3 className="font-mono text-sm font-semibold leading-tight text-[#e8e8f0]">
+                  {t(project.title, lang)}
                 </h3>
               </div>
-              
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1 mb-3">
-                {project.tags.slice(0, 4).map((tag, i) => (
+
+              <div className="mb-3 flex flex-wrap gap-1">
+                {project.tags.slice(0, 4).map((tag) => (
                   <span
-                    key={i}
-                    className="px-2 py-0.5 rounded-full text-[10px] font-medium"
-                    style={{ 
-                      backgroundColor: `${tag.color}20`,
-                      color: tag.color,
-                      border: `1px solid ${tag.color}40`
-                    }}
+                    key={tag}
+                    className="rounded-full border border-[rgba(0,240,255,0.2)] bg-[rgba(0,240,255,0.08)] px-2 py-0.5 text-[10px] text-[#7ef0ff]"
                   >
-                    {tag.label}
+                    {tag}
                   </span>
                 ))}
-                {project.tags.length > 4 && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] text-[#555]">
+                {project.tags.length > 4 ? (
+                  <span className="rounded-full px-2 py-0.5 text-[10px] text-[#8b91a3]">
                     +{project.tags.length - 4}
                   </span>
-                )}
+                ) : null}
               </div>
-              
-              {/* Description */}
-              <p className="text-[#8888aa] text-xs mb-3 line-clamp-2">
-                {project.description}
+
+              <p className="mb-3 line-clamp-3 text-xs leading-relaxed text-[#9aa0b5]">
+                {t(project.description, lang)}
               </p>
-              
-              {/* Footer */}
-              <div className="flex items-center justify-between">
-                <button className="text-[#00f0ff] text-xs hover:underline">
-                  View Details →
-                </button>
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <span 
-                      key={i} 
-                      className={i < project.stars ? 'text-[#ffd700]' : 'text-[#333]'}
-                    >
-                      ⭐
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
+
+              <span className="text-xs text-[#00f0ff]">
+                {lang === 'fr' ? 'Voir le détail →' : 'View details →'}
+              </span>
+            </motion.button>
           ))}
         </div>
       </div>
-      
-      {/* Project detail modal */}
+
       <AnimatePresence>
-        {selectedProject && (
+        {selected ? (
           <motion.div
-            className="absolute inset-0 bg-[rgba(0,0,0,0.8)] flex items-center justify-center p-8 z-10"
+            className="absolute inset-0 z-10 flex items-center justify-center bg-[rgba(0,0,0,0.8)] p-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedProject(null)}
+            onClick={() => setSelected(null)}
           >
             <motion.div
-              className="bg-[rgba(13,13,26,0.95)] border border-[rgba(0,240,255,0.2)] rounded-xl p-6 max-w-lg w-full max-h-[80%] overflow-auto"
-              initial={{ scale: 0.9, opacity: 0 }}
+              ref={detailRef}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-label={t(selected.title, lang)}
+              initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
+              exit={{ scale: 0.92, opacity: 0 }}
+              onClick={(event) => event.stopPropagation()}
+              className="max-h-[85%] w-full max-w-lg overflow-auto rounded-xl border border-[rgba(0,240,255,0.2)] bg-[rgba(13,13,26,0.97)] p-6"
             >
-              {/* Header */}
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-4xl">{selectedProject.icon}</span>
+              <div className="mb-4 flex items-start gap-3">
+                <span className="text-3xl" aria-hidden="true">
+                  {selected.icon}
+                </span>
                 <div>
-                  <h2 className="text-[#e8e8f0] font-semibold text-lg">
-                    {selectedProject.title}
-                  </h2>
-                  <span className="text-[#555] text-xs">{selectedProject.category}</span>
+                  <h3 className="text-lg font-semibold text-[#e8e8f0]">{t(selected.title, lang)}</h3>
+                  <span className="text-xs uppercase tracking-wider text-[#8b91a3]">
+                    {t(selected.category, lang)}
+                  </span>
                 </div>
               </div>
-              
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {selectedProject.tags.map((tag, i) => (
+
+              <div className="mb-4 flex flex-wrap gap-2">
+                {selected.tags.map((tag) => (
                   <span
-                    key={i}
-                    className="px-3 py-1 rounded-full text-xs font-medium"
-                    style={{ 
-                      backgroundColor: `${tag.color}20`,
-                      color: tag.color,
-                      border: `1px solid ${tag.color}40`
-                    }}
+                    key={tag}
+                    className="rounded-full border border-[rgba(0,240,255,0.2)] bg-[rgba(0,240,255,0.08)] px-3 py-0.5 text-xs text-[#7ef0ff]"
                   >
-                    {tag.label}
+                    {tag}
                   </span>
                 ))}
               </div>
-              
-              {/* Description */}
-              <p className="text-[#e8e8f0] mb-4 leading-relaxed">
-                {selectedProject.details}
-              </p>
-              
-              {/* Results */}
-              <div className="bg-[rgba(0,240,255,0.05)] rounded-lg p-4 mb-4">
-                <h4 className="text-[#00f0ff] text-sm font-semibold mb-2">Key Results</h4>
-                <ul className="space-y-1">
-                  {selectedProject.results.map((result, i) => (
-                    <li key={i} className="text-[#e8e8f0] text-sm flex items-center gap-2">
-                      <span className="text-[#00ff88]">✓</span>
-                      {result}
+
+              <p className="mb-4 text-sm leading-relaxed text-[#e8e8f0]">{t(selected.description, lang)}</p>
+
+              <div className="mb-4 rounded-lg bg-[rgba(0,240,255,0.05)] p-4">
+                <h4 className="mb-2 text-sm font-semibold text-[#00f0ff]">
+                  {lang === 'fr' ? 'Points clés' : 'Key points'}
+                </h4>
+                <ul className="space-y-1.5">
+                  {selected.highlightsList.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-[#c8ccdb]">
+                      <span className="text-[#00ff88]" aria-hidden="true">
+                        ✓
+                      </span>
+                      {t(item, lang)}
                     </li>
                   ))}
                 </ul>
               </div>
-              
-              {/* Close button */}
+
               <button
-                onClick={() => setSelectedProject(null)}
-                className="w-full py-2 bg-[rgba(0,240,255,0.1)] border border-[rgba(0,240,255,0.2)] rounded-lg text-[#00f0ff] hover:bg-[rgba(0,240,255,0.2)] transition-colors"
+                type="button"
+                onClick={() => setSelected(null)}
+                className="w-full rounded-lg border border-[rgba(0,240,255,0.2)] bg-[rgba(0,240,255,0.1)] py-2 text-[#00f0ff] transition-colors hover:bg-[rgba(0,240,255,0.2)]"
               >
-                Close
+                {lang === 'fr' ? 'Fermer' : 'Close'}
               </button>
             </motion.div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   )
