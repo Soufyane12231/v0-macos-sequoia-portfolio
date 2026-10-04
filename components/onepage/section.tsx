@@ -1,0 +1,74 @@
+'use client'
+
+/**
+ * Section shell. Every section gets the same substrate: an index in mono, a
+ * sand eyebrow, a real <h2>, a lead sentence, and a decorative technical
+ * backdrop that never sits behind body text at readable contrast.
+ */
+
+import { SectionBackdrop } from './schematics'
+
+export function Section({
+  id,
+  index,
+  eyebrow,
+  heading,
+  lead,
+  backdrop = 'grid',
+  tone = 'dark',
+  children,
+  className,
+}: {
+  id: string
+  /** Two-digit engineering index, e.g. "02". */
+  index: string
+  eyebrow: string
+  heading: string
+  lead?: string
+  backdrop?: 'bus' | 'wave' | 'grid'
+  /** "sand" renders the single high-contrast panel of the page. */
+  tone?: 'dark' | 'sand'
+  children: React.ReactNode
+  className?: string
+}) {
+  const headingId = `${id}-heading`
+  return (
+    <section
+      id={id}
+      aria-labelledby={headingId}
+      className={`relative scroll-mt-24 border-t border-line-soft ${tone === 'sand' ? 'on-sand' : ''} ${className ?? ''}`}
+    >
+      {tone === 'dark' ? <SectionBackdrop variant={backdrop} /> : null}
+      {tone === 'sand' ? (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.16]"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, rgba(8,39,40,0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(8,39,40,0.5) 1px, transparent 1px)',
+            backgroundSize: '64px 64px',
+          }}
+        />
+      ) : null}
+
+      <div className="shell relative py-20 sm:py-28">
+        <header className="max-w-3xl">
+          <p className="eyebrow flex items-center gap-3">
+            {/* The trailing space is load-bearing: whitespace-only text inside
+                a flex container produces no box, so it costs nothing visually,
+                but it keeps a crawler that reads raw text from seeing
+                "01En bref" instead of "01 En bref". */}
+            <span className="index-mark">{index} </span>
+            <span aria-hidden="true" className="inline-block h-px w-8 bg-current opacity-50" />
+            <span>{eyebrow}</span>
+          </p>
+          <h2 id={headingId} className="h-section mt-5 text-paper">
+            {heading}
+          </h2>
+          {lead ? <p className="lead mt-5">{lead}</p> : null}
+        </header>
+        <div className="mt-12 sm:mt-16">{children}</div>
+      </div>
+    </section>
+  )
+}

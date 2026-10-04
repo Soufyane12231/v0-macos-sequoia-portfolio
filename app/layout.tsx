@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { LanguageProvider } from '@/components/portfolio/language-provider'
-import { site } from '@/lib/portfolio-data'
+import { seo, site } from '@/lib/portfolio-data'
 import './globals.css'
 
 const inter = Inter({
@@ -26,11 +26,10 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: 'Soufyane Elaouni — Élève ingénieur en Mécatronique | Automatisme industriel & Systèmes embarqués',
+    default: seo.title.fr,
     template: '%s | Soufyane Elaouni',
   },
-  description:
-    "Portfolio de Soufyane Elaouni, élève ingénieur en dernière année de Mécatronique à l'ENSA Tétouan : automatisme industriel (Siemens TIA Portal, WinCC, mise en service) et systèmes embarqués (diagnostic automobile ESP32, CAN/UDS, contrôle temps réel). Stage en cours chez Renault Technology Morocco.",
+  description: seo.description.fr,
   keywords: [
     'Soufyane Elaouni',
     'Mécatronique',
@@ -49,7 +48,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: site.name, url: site.url }],
   creator: site.name,
-  alternates: { canonical: '/' },
+  publisher: site.name,
+  alternates: {
+    canonical: '/',
+    languages: { 'fr-FR': '/', 'en': '/' },
+  },
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
@@ -61,18 +64,18 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'profile',
     url: site.url,
-    siteName: 'SoufyaneOS',
+    siteName: 'Soufyane Elaouni',
     locale: 'fr_MA',
     alternateLocale: ['en_US'],
-    title: 'Soufyane Elaouni — Mécatronique | Automatisme industriel & Systèmes embarqués',
-    description:
-      "Stagiaire en diagnostic automobile chez Renault Technology Morocco. Automatisme industriel (TIA Portal, WinCC) et systèmes embarqués (ESP32, CAN/UDS, MATLAB/Simulink).",
+    title: seo.ogTitle.fr,
+    description: seo.ogDescription.fr,
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: seo.ogTitle.fr }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Soufyane Elaouni — Mécatronique | Automatisme & Systèmes embarqués',
-    description:
-      'Diagnostic automobile embarqué (CAN/UDS), automatisme industriel Siemens TIA Portal / WinCC, systèmes embarqués ESP32 & STM32.',
+    title: seo.ogTitle.fr,
+    description: seo.ogDescription.fr,
+    images: ['/opengraph-image'],
   },
   robots: {
     index: true,
@@ -83,19 +86,17 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#07070f',
+  themeColor: '#05181a',
   width: 'device-width',
   initialScale: 1,
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
+    // `lang` is updated client-side by LanguageProvider; French is the default
+    // because it matches the CV and the primary audience.
     <html lang="fr" className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable}`}>
-      <body className="bg-[#07070f] font-sans text-[#e8e8f0] antialiased">
+      <body className="bg-brin font-sans text-menthe antialiased">
         <LanguageProvider>{children}</LanguageProvider>
         {process.env.VERCEL === '1' && <Analytics />}
       </body>
