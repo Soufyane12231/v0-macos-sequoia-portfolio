@@ -48,9 +48,9 @@ export function Parcours({ lang }: { lang: 'fr' | 'en' }) {
     >
       <div className="grid gap-12 lg:grid-cols-3 lg:gap-10">
         <Column index="01" title={t(ui.sections.parcours, lang)}>
-          <ol className="space-y-6">
+          <ol data-stagger data-stagger-step="95" className="space-y-6">
             {education.map((item) => (
-              <li key={item.id} className="border-l border-line pl-5">
+              <li key={item.id} className="group border-l border-line pl-5 transition-colors duration-300 hover:border-tan">
                 <p className="mono text-[0.62rem] tracking-[0.12em] text-sable">{t(item.period, lang)}</p>
                 <p className="mt-1.5 font-display text-[0.95rem] leading-snug font-medium text-paper">
                   {t(item.title, lang)}
@@ -62,12 +62,14 @@ export function Parcours({ lang }: { lang: 'fr' | 'en' }) {
         </Column>
 
         <Column index="02" title={t(ui.sections.certifications, lang)}>
-          <ul className="space-y-5">
+          <ul data-stagger data-stagger-step="110" className="space-y-5">
             {certifications.map((cert) => (
-              <li key={cert.id} className="flex items-center gap-4">
+              <li key={cert.id} className="group flex items-center gap-4">
                 <CertStamp year={cert.year} />
                 <div className="min-w-0">
-                  <p className="text-[0.95rem] leading-snug font-medium text-paper">{t(cert.title, lang)}</p>
+                  <p className="text-[0.95rem] leading-snug font-medium text-paper transition-colors duration-200 group-hover:text-sable">
+                    {t(cert.title, lang)}
+                  </p>
                   <p className="mono mt-1 text-[0.62rem] tracking-[0.12em] text-muted uppercase">
                     {cert.issuer}
                   </p>
@@ -78,11 +80,11 @@ export function Parcours({ lang }: { lang: 'fr' | 'en' }) {
         </Column>
 
         <Column index="03" title={t(ui.sections.languages, lang)}>
-          <ul className="space-y-4">
+          <ul data-stagger data-stagger-step="80" className="space-y-4">
             {spokenLanguages.map((language) => (
               <li
                 key={language.id}
-                className="flex items-center justify-between gap-4 border-b border-line-soft pb-3"
+                className="group flex items-center justify-between gap-4 border-b border-line-soft pb-3 transition-colors duration-300 hover:border-tan"
               >
                 <span className="font-display text-[0.95rem] text-paper">{t(language.name, lang)}</span>
                 <span className="mono text-[0.65rem] tracking-[0.1em] text-tan uppercase">

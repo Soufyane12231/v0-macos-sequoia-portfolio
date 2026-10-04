@@ -12,7 +12,10 @@
  *    en is opt-in. Resolve with `t(value, lang)`.
  *  - Anti-redundancy is structural, not editorial:
  *      · contact links (LinkedIn / GitHub / email / phone / site) exist ONLY in
- *        the Contact section, plus the CV button in the header and Contact.
+ *        the Contact section.
+ *      · the "Télécharger le CV" call to action exists ONLY in the sticky
+ *        header. It used to appear in the hero and again at the foot of
+ *        Contact; both were removed as repetitions of the same one action.
  *      · the four figures (19 s, 9 ECU, 80+, 2) exist ONLY in "En bref".
  *      · the internship status exists ONLY in the hero.
  *      · skill tags exist ONLY in Compétences.
@@ -95,8 +98,10 @@ export const hero = {
     fr: "Élève ingénieur en dernière année de Mécatronique à l'ENSA Tétouan. D'un côté la programmation d'automates sous Siemens TIA Portal, la supervision WinCC et la mise en commission ; de l'autre les logiciels de diagnostic embarqués et la communication CAN / UDS.",
     en: 'Final-year Mechatronics engineering student at ENSA Tetouan. On one side PLC programming in Siemens TIA Portal, WinCC supervision and commissioning; on the other, embedded diagnostic software and CAN / UDS communication.',
   } satisfies L,
-  ctaPrimary: { fr: 'Télécharger le CV', en: 'Download CV' } satisfies L,
+  /** The hero's single call to action: the CV button lives in the header. */
   ctaSecondary: { fr: 'Me contacter', en: 'Get in touch' } satisfies L,
+  /** Opens the command palette, so the hero advertises the keyboard route. */
+  ctaNav: { fr: 'Navigation rapide', en: 'Quick navigation' } satisfies L,
   photoAlt: {
     fr: 'Portrait de Soufyane Elaouni',
     en: 'Portrait of Soufyane Elaouni',
@@ -701,6 +706,56 @@ export const ui = {
     downloadCv: { fr: 'Télécharger le CV', en: 'Download CV' } satisfies L,
     contact: { fr: 'Aller au contact', en: 'Go to contact' } satisfies L,
     backToTop: { fr: 'Retour en haut', en: 'Back to top' } satisfies L,
+    legend: {
+      navigate: { fr: 'naviguer', en: 'navigate' } satisfies L,
+      open: { fr: 'ouvrir', en: 'open' } satisfies L,
+      close: { fr: 'fermer', en: 'close' } satisfies L,
+    } satisfies Record<string, unknown>,
+  } satisfies Record<string, unknown>,
+  /** The shortcuts dialog: every key that does something on this site. */
+  shortcuts: {
+    title: { fr: 'Raccourcis clavier', en: 'Keyboard shortcuts' } satisfies L,
+    trigger: { fr: 'Raccourcis', en: 'Shortcuts' } satisfies L,
+    lead: {
+      fr: 'Le site se parcourt entièrement au clavier, sans souris.',
+      en: 'The whole site can be traversed from the keyboard, no mouse needed.',
+    } satisfies L,
+    note: {
+      fr: "Les animations suivent le réglage système « réduire les animations » : désactivé, le site s'affiche à l'état final.",
+      en: 'Animations follow the system "reduce motion" setting: switch it on and the site renders in its final state.',
+    } satisfies L,
+    rows: [
+      {
+        id: 'palette',
+        keys: ['Ctrl', 'K'],
+        action: { fr: 'Ouvrir la navigation rapide', en: 'Open quick navigation' } satisfies L,
+      },
+      {
+        id: 'arrows',
+        keys: ['↑', '↓'],
+        action: { fr: 'Se déplacer dans la liste', en: 'Move through the list' } satisfies L,
+      },
+      {
+        id: 'enter',
+        keys: ['↵'],
+        action: { fr: 'Ouvrir la sélection', en: 'Open the selection' } satisfies L,
+      },
+      {
+        id: 'modules',
+        keys: ['←', '→'],
+        action: { fr: 'Changer de module de compétences', en: 'Change skill module' } satisfies L,
+      },
+      {
+        id: 'tab',
+        keys: ['Tab'],
+        action: { fr: 'Aller à l’élément suivant', en: 'Move to the next element' } satisfies L,
+      },
+      {
+        id: 'escape',
+        keys: ['Échap'],
+        action: { fr: 'Fermer la fenêtre', en: 'Close the dialog' } satisfies L,
+      },
+    ] satisfies Record<string, unknown>[],
   } satisfies Record<string, unknown>,
   footer: {
     built: { fr: 'Conçu et développé par Soufyane Elaouni', en: 'Designed and built by Soufyane Elaouni' } satisfies L,

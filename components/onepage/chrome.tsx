@@ -6,7 +6,7 @@
  * only copy of a fact.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { site, t, ui } from '@/lib/portfolio-data'
 import { Magnetic } from './motion'
 
@@ -31,15 +31,25 @@ export function Header({
   onToggleLang,
   activeId,
   onOpenPalette,
+  onOpenShortcuts,
+  progress,
+  scrolled,
 }: {
   lang: 'fr' | 'en'
   onToggleLang: () => void
   activeId: string
   onOpenPalette: () => void
+  onOpenShortcuts: () => void
+  /** 0..1 page scroll, drawn as the sand rule along the header's bottom edge. */
+  progress: number
+  /** True once the page has left the top, so the bar can gain its own ground. */
+  scrolled: boolean
 }) {
   return (
     <header
-      className="sticky top-0 z-40 border-b border-line-soft bg-brin/80 backdrop-blur-md"
+      className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors duration-300 ${
+        scrolled ? 'border-line bg-brin/92' : 'border-line-soft bg-brin/80'
+      }`}
       style={{ height: 'var(--header-h)' }}
     >
       <div className="shell flex h-full items-center gap-4">
@@ -99,6 +109,9 @@ export function Header({
             ))}
           </div>
 
+          {/* The one and only "Télécharger le CV" control on the page. It lives
+              in the sticky header so it is reachable from anywhere without
+              repeating itself in the hero and again at the foot of Contact. */}
           <Magnetic strength={4}>
             <a
               href={site.links.cv}
@@ -108,6 +121,15 @@ export function Header({
               {t(ui.palette.downloadCv, lang)}
             </a>
           </Magnetic>
+
+          <button
+            type="button"
+            onClick={onOpenShortcuts}
+            className="mono hidden border border-line px-2 py-1.5 text-[0.7rem] tracking-[0.1em] text-muted uppercase transition-colors duration-200 hover:border-tan hover:text-sable lg:block"
+          >
+            <span aria-hidden="true">?</span>
+            <span className="sr-only">{t(ui.shortcuts.trigger, lang)}</span>
+          </button>
 
           <button
             type="button"
@@ -121,6 +143,15 @@ export function Header({
           </button>
         </div>
       </div>
+
+      {/* Scroll progress. Reads as the sand edge of the header filling up; it
+          carries no information that is not also in the document, so it stays
+          decorative and is hidden from assistive technology. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 h-px origin-left bg-sable"
+        style={{ transform: `scaleX(${Math.max(0, Math.min(1, progress))})` }}
+      />
     </header>
   )
 }
@@ -216,7 +247,7 @@ export function DataBus({ progress, activeId }: { progress: number; activeId: st
   }, [])
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-y-0 left-0 z-30 hidden w-9 xl:block">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-y-0 left-0 z-30 hidden w-8 lg:block xl:w-9">
       <svg className="h-full w-full" viewBox="0 0 36 1000" preserveAspectRatio="none">
         {/* the carriage: a dark channel running the full height */}
         <line x1="14" y1="0" x2="14" y2="1000" stroke="var(--line-soft)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
@@ -242,6 +273,14 @@ export function DataBus({ progress, activeId }: { progress: number; activeId: st
           vectorEffect="non-scaling-stroke"
           opacity="0.5"
         />
+        {/* the head of the trace, with its own halo */}
+        <circle
+          cx="14"
+          cy={Math.max(0, Math.min(1, progress)) * 1000}
+          r="3"
+          fill="var(--signal)"
+          vectorEffect="non-scaling-stroke"
+        />
         {nodes.map((n) => {
           const lit = n.id === activeId
           const y = (n.y / 1000) * 1000
@@ -249,6 +288,20 @@ export function DataBus({ progress, activeId }: { progress: number; activeId: st
             <g key={n.id} transform={`translate(0 ${y})`}>
               <line x1="14" y1="0" x2="26" y2="0" stroke="var(--line)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
               <line x1="20" y1="0" x2="20" y2="4" stroke={lit ? 'var(--tan)' : 'var(--line)'} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              {/* Only the node for the section in view gets a ring, so at any
+                  moment there is exactly one pulse on the rail. */}
+              {lit ? (
+                <circle
+                  className="rail-ping"
+                  cx="14"
+                  cy="0"
+                  r="4.5"
+                  fill="none"
+                  stroke="var(--sable)"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+              ) : null}
               <circle
                 cx="14"
                 cy="0"
@@ -270,17 +323,26 @@ export function DataBus({ progress, activeId }: { progress: number; activeId: st
 /* Custom cursor                                                        */
 /* ------------------------------------------------------------------ */
 
+/** Dots in the cursor's wake. Fewer and slower would read as lag, not motion. */
+const TRAIL = 7
+
 /**
  * A small sand dot with an orange signal core that grows over interactive
- * targets. Only mounted for fine pointers without reduced motion; the class
- * on <html> hides the native cursor only in that case, so touch devices and
- * reduced-motion users keep their normal pointer.
+ * targets, followed by a short wake of shrinking dots. Only mounted for fine
+ * pointers without reduced motion; the class on <html> hides the native cursor
+ * only in that case, so touch devices and reduced-motion users keep their
+ * normal pointer.
+ *
+ * The wake is written straight to the DOM from inside the same rAF that
+ * updates the head. Routing seven more points through React state would mean
+ * eight renders per frame for something nobody reads.
  */
 export function Cursor() {
   const [enabled, setEnabled] = useState(false)
   const [pos, setPos] = useState({ x: -100, y: -100 })
   const [active, setActive] = useState(false)
   const [pressed, setPressed] = useState(false)
+  const wake = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     const fine = window.matchMedia('(pointer: fine)')
@@ -303,14 +365,27 @@ export function Cursor() {
     let raf = 0
     let x = -100
     let y = -100
+    const points = Array.from({ length: TRAIL }, () => ({ x: -100, y: -100 }))
 
     const onMove = (event: PointerEvent) => {
       x = event.clientX
       y = event.clientY
+      points[0].x = x
+      points[0].y = y
       if (!raf) {
         raf = requestAnimationFrame(() => {
           raf = 0
           setPos({ x, y })
+          // Each dot chases the one ahead of it, so the wake stretches on a
+          // fast move and closes up again when the pointer stops.
+          for (let i = 1; i < points.length; i += 1) {
+            const lead = points[i - 1]
+            const dot = points[i]
+            dot.x += (lead.x - dot.x) * 0.34
+            dot.y += (lead.y - dot.y) * 0.34
+            const node = wake.current[i]
+            if (node) node.style.transform = `translate3d(${dot.x}px, ${dot.y}px, 0)`
+          }
         })
       }
       const target = event.target as Element | null
@@ -318,7 +393,13 @@ export function Cursor() {
     }
     const onDown = () => setPressed(true)
     const onUp = () => setPressed(false)
-    const onLeave = () => setPos({ x: -100, y: -100 })
+    const onLeave = () => {
+      setPos({ x: -100, y: -100 })
+      points.forEach((dot) => {
+        dot.x = -100
+        dot.y = -100
+      })
+    }
 
     window.addEventListener('pointermove', onMove, { passive: true })
     window.addEventListener('pointerdown', onDown)
@@ -343,6 +424,30 @@ export function Cursor() {
       className="pointer-events-none fixed inset-0 z-[60] hidden md:block"
       style={{ opacity: pos.x < 0 ? 0 : 1, transition: 'opacity 160ms linear' }}
     >
+      {/* The wake sits under the head, and shrinks along its length. */}
+      {Array.from({ length: TRAIL - 1 }, (_, k) => {
+        const index = k + 1
+        const size = 9 - index
+        return (
+          <div
+            key={index}
+            ref={(node) => {
+              wake.current[index] = node
+            }}
+            className="absolute rounded-full"
+            style={{
+              left: 0,
+              top: 0,
+              width: size,
+              height: size,
+              marginLeft: -size / 2,
+              marginTop: -size / 2,
+              background: 'var(--tan)',
+              opacity: 0.4 - index * 0.045,
+            }}
+          />
+        )
+      })}
       <div
         className="absolute rounded-full border"
         style={{

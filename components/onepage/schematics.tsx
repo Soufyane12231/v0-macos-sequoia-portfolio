@@ -380,16 +380,27 @@ export function LadderDiagram() {
 /* 7. Project schematics                                                */
 /* ================================================================== */
 
-export function ProjectSchematic({ kind }: { kind: 'ecu' | 'acc' | 'ballbeam' }) {
-  if (kind === 'ecu') return <EcuSchematic />
-  if (kind === 'acc') return <AccSchematic />
-  return <BallBeamSchematic />
+export function ProjectSchematic({
+  kind,
+  live = false,
+}: {
+  kind: 'ecu' | 'acc' | 'ballbeam'
+  /**
+   * Run the drawing's own loop. Set inside the dialog, where the reader has
+   * deliberately asked to look at it. On a card the same loop runs on hover
+   * instead, from the stylesheet.
+   */
+  live?: boolean
+}) {
+  if (kind === 'ecu') return <EcuSchematic live={live} />
+  if (kind === 'acc') return <AccSchematic live={live} />
+  return <BallBeamSchematic live={live} />
 }
 
 /** Tester -> transceiver -> CAN line -> ECU, with request/response frames. */
-function EcuSchematic() {
+function EcuSchematic({ live }: { live: boolean }) {
   return (
-    <svg {...DECO} className="h-full w-full" viewBox="0 0 240 130" preserveAspectRatio="xMidYMid meet">
+    <svg {...DECO} className={`ecu-sch h-full w-full ${live ? 'live' : ''}`} viewBox="0 0 240 130" preserveAspectRatio="xMidYMid meet">
       {/* tester block */}
       <rect x="6" y="42" width="44" height="46" fill="none" stroke={S.tan} strokeWidth="1.2" />
       <text x="28" y="62" fill={S.ink} fontSize="7" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
@@ -407,29 +418,45 @@ function EcuSchematic() {
       {[112, 146, 180, 214].map((x, i) => (
         <g key={x}>
           <line x1={x} y1="65" x2={x} y2="46" stroke={S.line} strokeWidth="1" />
-          <rect x={x - 8} y="28" width="16" height="18" fill="none" stroke={S.tan} strokeWidth="1.2" />
+          <rect
+            className="ecu-node"
+            style={{ animationDelay: `${560 + i * 640}ms` }}
+            x={x - 8}
+            y="28"
+            width="16"
+            height="18"
+            fill="var(--brin-deep)"
+            stroke={S.tan}
+            strokeWidth="1.2"
+          />
           <text x={x} y="40" fill={S.muted} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
             {`0x${(0x7 + i * 4).toString(16).toUpperCase()}`}
           </text>
         </g>
       ))}
-      {/* request / response frames */}
-      <rect x="96" y="92" width="52" height="14" fill="none" stroke={S.sand} strokeWidth="1" />
-      <text x="122" y="102" fill={S.sand} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
-        0x7DF REQ
-      </text>
-      <rect x="156" y="92" width="52" height="14" fill="none" stroke={S.sand} strokeWidth="1" />
-      <text x="182" y="102" fill={S.sand} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
-        0x7E8 RSP
-      </text>
+      {/* request / response frames: both start beside the tester, one leaves
+          and one comes back. The travel distance is the loop length in
+          globals.css, so the two rules there stay in step with these boxes. */}
+      <g className="ecu-req">
+        <rect x="96" y="88" width="52" height="14" fill="var(--brin-deep)" stroke={S.sand} strokeWidth="1" />
+        <text x="122" y="98" fill={S.sand} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
+          0x7DF REQ
+        </text>
+      </g>
+      <g className="ecu-rsp">
+        <rect x="96" y="108" width="52" height="14" fill="var(--brin-deep)" stroke={S.sand} strokeWidth="1" />
+        <text x="122" y="118" fill={S.sand} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
+          0x7E8 RSP
+        </text>
+      </g>
     </svg>
   )
 }
 
 /** ACC: ego vehicle, lead vehicle, gap, controller block. */
-function AccSchematic() {
+function AccSchematic({ live }: { live: boolean }) {
   return (
-    <svg {...DECO} className="h-full w-full" viewBox="0 0 240 130" preserveAspectRatio="xMidYMid meet">
+    <svg {...DECO} className={`acc-sch h-full w-full ${live ? 'live' : ''}`} viewBox="0 0 240 130" preserveAspectRatio="xMidYMid meet">
       {/* road */}
       <line x1="8" y1="92" x2="232" y2="92" stroke={S.line} strokeWidth="1" />
       <line x1="8" y1="100" x2="232" y2="100" stroke={S.line} strokeWidth="0.6" strokeDasharray="8 6" />
@@ -438,26 +465,29 @@ function AccSchematic() {
       <text x="49" y="81" fill={S.ink} fontSize="7" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
         EGO
       </text>
-      {/* lead */}
-      <rect x="158" y="66" width="46" height="24" fill="none" stroke={S.tan} strokeWidth="1.4" />
-      <text x="181" y="81" fill={S.ink} fontSize="7" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
-        LEAD
-      </text>
-      {/* gap */}
-      <line x1="74" y1="56" x2="156" y2="56" stroke={S.sand} strokeWidth="1" />
-      <line x1="74" y1="52" x2="74" y2="60" stroke={S.sand} strokeWidth="1" />
-      <line x1="156" y1="52" x2="156" y2="60" stroke={S.sand} strokeWidth="1" />
-      <text x="115" y="48" fill={S.sand} fontSize="7" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
-        d
-      </text>
+      {/* lead vehicle and the measured gap, as one moving group */}
+      <g className="acc-lead">
+        <rect x="158" y="66" width="46" height="24" fill="none" stroke={S.tan} strokeWidth="1.4" />
+        <text x="181" y="81" fill={S.ink} fontSize="7" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
+          LEAD
+        </text>
+        <line x1="74" y1="56" x2="156" y2="56" stroke={S.sand} strokeWidth="1" />
+        <line x1="74" y1="52" x2="74" y2="60" stroke={S.sand} strokeWidth="1" />
+        <line x1="156" y1="52" x2="156" y2="60" stroke={S.sand} strokeWidth="1" />
+        <text x="115" y="48" fill={S.sand} fontSize="7" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
+          d
+        </text>
+      </g>
       {/* controller */}
-      <rect x="82" y="14" width="76" height="26" fill="none" stroke={S.tan} strokeWidth="1.2" />
-      <text x="120" y="25" fill={S.ink} fontSize="6.5" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
-        ACC CTRL
-      </text>
-      <text x="120" y="34" fill={S.muted} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
-        SIMULINK
-      </text>
+      <g className="acc-ctrl">
+        <rect x="82" y="14" width="76" height="26" fill="none" stroke={S.tan} strokeWidth="1.2" />
+        <text x="120" y="25" fill={S.ink} fontSize="6.5" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
+          ACC CTRL
+        </text>
+        <text x="120" y="34" fill={S.muted} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
+          SIMULINK
+        </text>
+      </g>
       <line x1="120" y1="40" x2="120" y2="64" stroke={S.line} strokeWidth="1" strokeDasharray="3 3" />
       <line x1="49" y1="64" x2="49" y2="46" stroke={S.line} strokeWidth="1" strokeDasharray="3 3" />
       <line x1="49" y1="46" x2="82" y2="46" stroke={S.line} strokeWidth="1" strokeDasharray="3 3" />
@@ -469,18 +499,28 @@ function AccSchematic() {
 }
 
 /** Ball & beam: beam, ball, PID block, FPGA line. */
-function BallBeamSchematic() {
+function BallBeamSchematic({ live }: { live: boolean }) {
   return (
-    <svg {...DECO} className="h-full w-full" viewBox="0 0 240 130" preserveAspectRatio="xMidYMid meet">
-      {/* beam, tilted: a control system at work, not a level line */}
-      <line x1="26" y1="72" x2="214" y2="62" stroke={S.tan} strokeWidth="2" />
-      <line x1="26" y1="80" x2="214" y2="70" stroke={S.line} strokeWidth="0.8" />
-      {/* pivot */}
-      <path d="M118 78 L126 94 L134 78 Z" fill="none" stroke={S.tan} strokeWidth="1.2" />
+    <svg {...DECO} className={`bb-sch h-full w-full ${live ? 'live' : ''}`} viewBox="0 0 240 130" preserveAspectRatio="xMidYMid meet">
+      {/* The whole arm rotates about the pivot. `transform-box: view-box` with
+          an explicit origin in viewBox units is what makes that rotation land
+          on the pivot instead of the SVG's top-left corner. */}
+      <g
+        className="bb-arm"
+        style={{ transformBox: 'view-box', transformOrigin: '126px 94px' }}
+      >
+        {/* beam, tilted: a control system at work, not a level line */}
+        <line x1="26" y1="72" x2="214" y2="62" stroke={S.tan} strokeWidth="2" />
+        <line x1="26" y1="80" x2="214" y2="70" stroke={S.line} strokeWidth="0.8" />
+        {/* pivot */}
+        <path d="M118 78 L126 94 L134 78 Z" fill="none" stroke={S.tan} strokeWidth="1.2" />
+        {/* the ball, off-centre: the loop is what closes it */}
+        <g className="bb-ball">
+          <circle cx="168" cy="62" r="6" fill={S.sand} />
+          <circle cx="168" cy="62" r="11" fill="none" stroke={S.sand} strokeWidth="0.7" opacity="0.45" />
+        </g>
+      </g>
       <line x1="30" y1="94" x2="210" y2="94" stroke={S.line} strokeWidth="1" />
-      {/* the ball, off-centre: the loop is what closes it */}
-      <circle cx="168" cy="62" r="6" fill={S.sand} />
-      <circle cx="168" cy="62" r="11" fill="none" stroke={S.sand} strokeWidth="0.7" opacity="0.45" />
       {/* set point */}
       <line x1="120" y1="34" x2="120" y2="70" stroke={S.muted} strokeWidth="0.7" strokeDasharray="4 4" />
       <text x="120" y="30" fill={S.muted} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
@@ -530,28 +570,105 @@ export function CertStamp({ year }: { year: string }) {
 }
 
 /* ================================================================== */
-/* 9. Section backdrop — slow blueprint drift                          */
+/* 9. Section substrate — slow blueprint drift                         */
 /* ================================================================== */
+
+/**
+ * Deterministic pseudo-random in [0, 1). Math.random() is deliberately not
+ * used: these positions have to be identical on the server and on the client,
+ * or React reports a hydration mismatch on every page load.
+ */
+function noise(seed: number) {
+  const x = Math.sin(seed * 127.1) * 43758.5453
+  return x - Math.floor(x)
+}
+
+/**
+ * A handful of slow specks drifting upward through a section. Transform and
+ * opacity only, `aria-hidden`, `pointer-events: none`, and removed outright by
+ * the stylesheet under reduced motion.
+ */
+export function Motes({ count = 8, seed = 1 }: { count?: number; seed?: number }) {
+  return (
+    <>
+      {Array.from({ length: count }, (_, i) => {
+        const s = seed + i * 7.13
+        const size = 1 + noise(s + 1) * 1.9
+        return (
+          <span
+            key={i}
+            className="mote"
+            style={
+              {
+                left: `${(noise(s + 2) * 100).toFixed(2)}%`,
+                top: `${(noise(s + 3) * 96).toFixed(2)}%`,
+                width: `${size.toFixed(2)}px`,
+                height: `${size.toFixed(2)}px`,
+                '--mdur': `${(20 + noise(s + 4) * 24).toFixed(1)}s`,
+                // Negative delay, so the field is already mid-flight on load
+                // instead of every speck starting from the same bottom edge.
+                '--mdelay': `${(-noise(s + 5) * 44).toFixed(1)}s`,
+                '--mdx': `${((noise(s + 6) - 0.5) * 72).toFixed(1)}px`,
+                '--mdy': `${(-70 - noise(s + 7) * 160).toFixed(1)}px`,
+              } as CSSProperties
+            }
+          />
+        )
+      })}
+    </>
+  )
+}
 
 /**
  * The technical-drawing substrate behind dark sections. Extremely low
  * contrast on purpose: it must never compete with body text.
+ *
+ * Three layers, all clipped by the wrapper:
+ *   - the plate (bus trace / wave / blueprint grid), oversized by
+ *     `.plate-parallax` so the drift and the parallax offset never expose an
+ *     edge; the bus and wave variants draw themselves in when the section
+ *     arrives, via `data-draw` and the shared reveal observer;
+ *   - the motes;
+ *   - nothing else. The content sits above all of it in a sibling layer.
  */
-export function SectionBackdrop({ variant = 'bus' }: { variant?: 'bus' | 'wave' | 'grid' }) {
-  if (variant === 'wave') {
-    return (
-      <svg {...DECO} className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.16]" viewBox="0 0 1200 400" preserveAspectRatio="none">
-        <path d="M0 300 C 150 300 150 120 300 120 S 450 300 600 300 S 750 120 900 120 S 1050 300 1200 300" fill="none" stroke={S.line} strokeWidth="1.5" />
-        <path d="M0 330 C 150 330 150 150 300 150 S 450 330 600 330 S 750 150 900 150 S 1050 330 1200 330" fill="none" stroke={S.soft} strokeWidth="1" />
-        <path d="M0 270 C 150 270 150 90 300 90 S 450 270 600 270 S 750 90 900 90 S 1050 270 1200 270" fill="none" stroke={S.soft} strokeWidth="1" />
-      </svg>
-    )
-  }
-  if (variant === 'grid') {
-    return <div {...DECO} className="grid-paper pointer-events-none absolute inset-0 h-full w-full opacity-[0.28]" />
-  }
+export function SectionBackdrop({
+  variant = 'bus',
+  motes = true,
+  seed = 1,
+}: {
+  variant?: 'bus' | 'wave' | 'grid'
+  motes?: boolean
+  seed?: number
+}) {
   return (
-    <svg {...DECO} className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.18]" viewBox="0 0 1200 400" preserveAspectRatio="none">
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div data-parallax="0.05" className="plate-parallax">
+        {variant === 'grid' ? (
+          <div className="grid-paper drift h-full w-full opacity-[0.28]" />
+        ) : (
+          <div className="h-full w-full" data-draw="" style={{ opacity: variant === 'wave' ? 0.16 : 0.18 }}>
+            {variant === 'wave' ? <WavePlate /> : <BusPlate />}
+          </div>
+        )}
+      </div>
+      {motes ? <Motes count={variant === 'grid' ? 7 : 9} seed={seed} /> : null}
+    </div>
+  )
+}
+
+function WavePlate() {
+  return (
+    <svg className="h-full w-full" viewBox="0 0 1200 400" preserveAspectRatio="none">
+      <path d="M0 300 C 150 300 150 120 300 120 S 450 300 600 300 S 750 120 900 120 S 1050 300 1200 300" fill="none" stroke={S.line} strokeWidth="1.5" />
+      <path d="M0 330 C 150 330 150 150 300 150 S 450 330 600 330 S 750 150 900 150 S 1050 330 1200 330" fill="none" stroke={S.soft} strokeWidth="1" />
+      <path d="M0 270 C 150 270 150 90 300 90 S 450 270 600 270 S 750 90 900 90 S 1050 270 1200 270" fill="none" stroke={S.soft} strokeWidth="1" />
+    </svg>
+  )
+}
+
+function BusPlate() {
+  return (
+    <svg className="h-full w-full" viewBox="0 0 1200 400" preserveAspectRatio="none">
       <line x1="0" y1="90" x2="1200" y2="90" stroke={S.line} strokeWidth="1" />
       <line x1="0" y1="95" x2="1200" y2="95" stroke={S.line} strokeWidth="0.6" />
       {Array.from({ length: 13 }, (_, i) => {

@@ -3,8 +3,12 @@
 /**
  * A. Hero.
  *
- * The only place on the site where the internship status appears, and the
- * only place with the "Télécharger le CV" call to action outside Contact.
+ * The only place on the site where the internship status appears.
+ *
+ * The "Télécharger le CV" button used to sit here as well as in the header and
+ * again at the foot of Contact. Three copies of one action is a repetition,
+ * not a call to action, so the header keeps the only visible one and this
+ * section offers contact plus the keyboard route into the whole page.
  *
  * Portrait handling: the frame is sized and drawn like a technical plate, so
  * `photo.jpg` can land later as a pure asset swap. With no portrait present
@@ -41,7 +45,7 @@ function RevealedName({ name }: { name: string }) {
   )
 }
 
-export function Hero({ lang }: { lang: 'fr' | 'en' }) {
+export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette: () => void }) {
   // No portrait has been dropped into /public yet; set this to
   // '/photo-soufyane.jpg' once the file exists and nothing else changes.
   const [photoSrc] = useState<string | undefined>(undefined)
@@ -49,11 +53,11 @@ export function Hero({ lang }: { lang: 'fr' | 'en' }) {
 
   return (
     <section id="hero" aria-labelledby="hero-heading" className="relative overflow-hidden">
-      <SectionBackdrop variant="bus" />
+      <SectionBackdrop variant="bus" seed={3} />
       {/* a single soft light source, top right, to give the petrol some depth */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-40 -right-32 h-[34rem] w-[34rem] rounded-full opacity-[0.5]"
+        className="glow-orb pointer-events-none absolute -top-40 -right-32 h-[34rem] w-[34rem] rounded-full opacity-[0.5]"
         style={{ background: 'radial-gradient(circle, #0f4a4b 0%, transparent 68%)' }}
       />
 
@@ -96,26 +100,24 @@ export function Hero({ lang }: { lang: 'fr' | 'en' }) {
           <div className="mt-9 flex flex-wrap items-center gap-3" data-reveal="left" style={{ '--reveal-delay': '640ms' } as React.CSSProperties}>
             <Magnetic strength={6}>
               <a
-                href={site.links.cv}
-                download={site.links.cvFileName}
-                className="brass inline-flex items-center gap-2.5 px-5 py-3 font-mono text-[0.72rem] tracking-[0.12em] text-brin uppercase transition-transform duration-200 hover:brightness-105"
-              >
-                <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
-                  <path d="M8 1.5v9M4.5 7.5 8 11l3.5-3.5M2 13.5h12" />
-                </svg>
-                {t(hero.ctaPrimary, lang)}
-              </a>
-            </Magnetic>
-            <Magnetic strength={6}>
-              <a
                 href="#contact"
-                className="inline-flex items-center gap-2.5 border border-line px-5 py-3 font-mono text-[0.72rem] tracking-[0.12em] text-menthe uppercase transition-colors duration-200 hover:border-tan hover:text-sable"
+                className="brass inline-flex items-center gap-2.5 px-5 py-3 font-mono text-[0.72rem] tracking-[0.12em] text-brin uppercase transition-[filter] duration-200 hover:brightness-105"
               >
                 {t(hero.ctaSecondary, lang)}
                 <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
                   <path d="M2 8h11M9 4l4 4-4 4" />
                 </svg>
               </a>
+            </Magnetic>
+            <Magnetic strength={4}>
+              <button
+                type="button"
+                onClick={onOpenPalette}
+                className="inline-flex items-center gap-2.5 border border-line px-5 py-3 font-mono text-[0.72rem] tracking-[0.12em] text-menthe uppercase transition-colors duration-200 hover:border-tan hover:text-sable"
+              >
+                {t(hero.ctaNav, lang)}
+                <kbd className="border border-line px-1.5 py-0.5 text-[0.62rem] tracking-[0.06em] text-tan">Ctrl K</kbd>
+              </button>
             </Magnetic>
           </div>
         </div>
@@ -130,7 +132,7 @@ export function Hero({ lang }: { lang: 'fr' | 'en' }) {
               </p>
             }
           />
-          </div>
+        </div>
       </div>
     </section>
   )

@@ -39,7 +39,12 @@ export function Experience({ lang }: { lang: 'fr' | 'en' }) {
       lead={t(ui.sectionLeads.experience, lang)}
       backdrop="bus"
     >
-      <ol ref={ref} className="relative">
+      <ol
+        ref={ref}
+        data-stagger
+        data-stagger-step="95"
+        className={`relative ${seen ? 'rail-in' : ''}`}
+      >
         {/* the timeline rail: drawn when the list enters the viewport */}
         <span
           aria-hidden="true"
@@ -52,22 +57,21 @@ export function Experience({ lang }: { lang: 'fr' | 'en' }) {
         />
         {experiences.map((item, index) => (
           <li key={item.id} className="relative pb-8 pl-10 last:pb-0">
-            {/* node on the rail */}
+            {/* node on the rail, with a one-shot ping as the list arrives */}
             <span
               aria-hidden="true"
-              className="absolute top-2 left-0 h-[15px] w-[15px] rounded-full border-2"
-              style={{
-                borderColor: seen ? 'var(--sable)' : 'var(--line)',
-                background: 'var(--brin)',
-                transition: 'border-color 420ms var(--ease-out-soft)',
-                transitionDelay: `${index * 90}ms`,
-              }}
+              className={`ping absolute top-2 left-0 h-[15px] w-[15px] rounded-full border-2 ${seen ? '' : 'opacity-0'}`}
+              style={
+                {
+                  '--ping': `${index * 180}ms`,
+                  borderColor: seen ? 'var(--sable)' : 'var(--line)',
+                  background: 'var(--brin)',
+                  transition: 'border-color 420ms var(--ease-out-soft)',
+                  transitionDelay: `${index * 90}ms`,
+                } as React.CSSProperties
+              }
             />
-            <article
-              data-reveal="left"
-              style={{ '--reveal-delay': `${index * 80}ms` } as React.CSSProperties}
-              className="card group"
-            >
+            <article className="card group spot" data-spot>
               <button
                 type="button"
                 onClick={() => setOpenId(item.id)}
@@ -111,12 +115,26 @@ export function Experience({ lang }: { lang: 'fr' | 'en' }) {
       >
         {open ? (
           <div>
-            <p className="mono text-[0.65rem] tracking-[0.12em] text-muted uppercase">
+            <p
+              className="mono text-[0.65rem] tracking-[0.12em] text-muted uppercase"
+              data-reveal="left"
+              style={{ '--reveal-delay': '40ms' } as React.CSSProperties}
+            >
               {t(open.location, lang)}
             </p>
-            <p className="body-copy mt-5 text-[0.975rem]">{t(open.summary, lang)}</p>
+            <p
+              className="body-copy mt-5 text-[0.975rem]"
+              data-reveal="left"
+              style={{ '--reveal-delay': '110ms' } as React.CSSProperties}
+            >
+              {t(open.summary, lang)}
+            </p>
 
-            <ul className="mt-6 space-y-4 border-t border-line-soft pt-6">
+            <ul
+              data-stagger
+              data-stagger-step="70"
+              className="mt-6 space-y-4 border-t border-line-soft pt-6"
+            >
               {open.bullets.map((bullet) => (
                 <li key={bullet.en} className="flex gap-3.5">
                   <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rotate-45 bg-sable" />

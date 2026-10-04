@@ -374,24 +374,38 @@ body::before {
 /* ------------------------------------------------------------------ */
 
 /* A single reveal implementation: `data-reveal` starts hidden only when the
-   browser is allowed to animate. `reveal-in` is added by a shared
-   IntersectionObserver, once, then the element is left alone. */
+   browser is allowed to animate, and `data-revealed` is set once by a shared
+   IntersectionObserver.
+
+   The revealed flag is an *attribute*, not a class, and that is deliberate.
+   React owns `className`: any component whose className is a conditional
+   template gets the whole attribute rewritten whenever that condition flips,
+   which silently strips a class the observer had added and drops the element
+   back to opacity 0. Selecting a skill tab, for instance, hid the tab you
+   clicked. An attribute React never renders cannot be clobbered that way, so
+   there is no second source of truth to keep in sync and no frame in which
+   revealed content is briefly invisible. */
 @media (prefers-reduced-motion: no-preference) {
   [data-reveal] {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
     transition:
       opacity 620ms var(--ease-out-soft),
       transform 620ms var(--ease-out-soft);
     transition-delay: var(--reveal-delay, 0ms);
   }
-  [data-reveal='left'] {
+  /* The generic hidden state. 'stack' is excluded: its animation belongs to the
+     children, so the observed header box has to stay unclipped and untransformed
+     for the IntersectionObserver to be able to see it. */
+  [data-reveal]:not([data-revealed]):not([data-reveal='stack']) {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  [data-reveal='left']:not([data-revealed]) {
     transform: translate3d(-18px, 0, 0);
   }
-  [data-reveal='scale'] {
+  [data-reveal='scale']:not([data-revealed]) {
     transform: scale(0.965);
   }
-  [data-reveal].reveal-in {
+  [data-reveal][data-revealed] {
     opacity: 1;
     transform: none;
   }
@@ -520,21 +534,7 @@ body::before {
     }
   }
 
-  /* Certification stamp: the ring draws, then the mark settles. */
-  .stamp-on {
-    animation: stamp-in 620ms var(--ease-out-soft) both;
   }
-  @keyframes stamp-in {
-    from {
-      opacity: 0;
-      transform: scale(0.86) rotate(-6deg);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-}
 
 /* Staggered cascade for skill chips. */
 @media (prefers-reduced-motion: no-preference) {
@@ -572,12 +572,525 @@ body::before {
   }
 }
 
-/* Reduced-motion kill switch. Nothing on this site loops indefinitely except
-   the ladder contact pulse, which is hover-only and never fires without a
-   pointer. */
+/* ---- Reveal variants -------------------------------------------------
+   Two more entrances plus a deeper rise, so a seven-section page does not
+   repeat the same gesture everywhere. All of them decorate markup that is
+   already in its final position: no text is ever only visible after an
+   animation, and the whole block is inside a no-preference query, so a
+   reduced-motion reader gets the finished layout with no keyframes at all. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Section header stack. One observed element drives three staggered gestures
+     on its children: the index slides in, the heading wipes up out of a clip,
+     the lead blurs into focus.
+
+     The clip sits on a child, never on the observed element itself, and that is
+     not a style choice. Chrome folds an element's own clip-path into its
+     IntersectionObserver intersection rect, so a clipped target reports zero
+     intersection and ratio 0: the callback never reports it as intersecting and
+     the heading stays hidden for the life of the page. Driving the clip from
+     the parent's flag keeps the observed box unclipped and measurable. */
+  [data-reveal='stack'] > .eyebrow {
+    opacity: 0;
+    transform: translate3d(-18px, 0, 0);
+    transition:
+      opacity 560ms var(--ease-out-soft),
+      transform 560ms var(--ease-out-soft);
+    transition-delay: var(--sd-eyebrow, 40ms);
+  }
+  [data-reveal='stack'] > h2 {
+    clip-path: inset(0 0 104% 0);
+    transition: clip-path 780ms var(--ease-out-soft);
+    transition-delay: var(--sd-heading, 110ms);
+  }
+  [data-reveal='stack'] > .lead {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translate3d(0, 20px, 0) scale(0.99);
+    transition:
+      opacity 700ms var(--ease-out-soft),
+      transform 700ms var(--ease-out-soft),
+      filter 700ms var(--ease-out-soft);
+    transition-delay: var(--sd-lead, 200ms);
+  }
+  [data-reveal='stack'][data-revealed] > .eyebrow {
+    opacity: 1;
+    transform: none;
+  }
+  [data-reveal='stack'][data-revealed] > h2 {
+    /* Negative insets let descenders and italics clear the clip box, which a
+       flush inset(0) would shave. */
+    clip-path: inset(-0.18em -0.14em -0.2em -0.14em);
+  }
+  [data-reveal='stack'][data-revealed] > .lead {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  /* Group entrance. Every direct child of a [data-stagger] container gets its
+     own transition; RevealObserver writes the per-child --reveal-delay and
+     marks the child revealed, not the container. The state is the same
+     data-revealed attribute used above, for the same reason: the tab buttons
+     in here have a conditional className, and React rewrites it on selection. */
+  [data-stagger] > * {
+    transition:
+      opacity 560ms var(--ease-out-soft),
+      transform 560ms var(--ease-out-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  [data-stagger] > *:not([data-revealed]) {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  [data-stagger] > [data-revealed] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- Section substrate ------------------------------------------------
+   The technical plate behind every dark section draws itself once as the
+   section arrives, and the grid variant keeps drifting, very slowly. The
+   plate is deliberately oversized on all four sides (.plate-parallax) so the
+   drift and the parallax offset can never expose an edge of the pattern. */
+.plate-parallax {
+  position: absolute;
+  top: -6rem;
+  bottom: -6rem;
+  left: -7rem;
+  right: -7rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-draw] path,
+  [data-draw] line,
+  [data-draw] polyline,
+  [data-draw] circle,
+  [data-draw] rect,
+  [data-draw] ellipse {
+    transition: stroke-dashoffset 1900ms var(--ease-out-soft);
+    transition-delay: var(--pd, 0ms);
+  }
+  [data-draw]:not([data-revealed]) path,
+  [data-draw]:not([data-revealed]) line,
+  [data-draw]:not([data-revealed]) polyline,
+  [data-draw]:not([data-revealed]) circle,
+  [data-draw]:not([data-revealed]) rect,
+  [data-draw]:not([data-revealed]) ellipse {
+    stroke-dasharray: 2600;
+    stroke-dashoffset: 2600;
+  }
+  [data-draw][data-revealed] path,
+  [data-draw][data-revealed] line,
+  [data-draw][data-revealed] polyline,
+  [data-draw][data-revealed] circle,
+  [data-draw][data-revealed] rect,
+  [data-draw][data-revealed] ellipse {
+    stroke-dashoffset: 0;
+  }
+
+  .drift {
+    animation: plate-drift 68s linear infinite;
+  }
+  @keyframes plate-drift {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-72px, -36px, 0);
+    }
+  }
+}
+
+/* ---- Ambient motes ----------------------------------------------------
+   A handful of slow specks per section: transform and opacity only, no
+   layout, no pointer events, well under 0.5 opacity. Dropped outright under
+   reduced motion rather than being flattened to one static frame. */
+@media (prefers-reduced-motion: no-preference) {
+  .mote {
+    position: absolute;
+    border-radius: 9999px;
+    background: var(--tan);
+    opacity: 0;
+    animation: mote-rise var(--mdur, 26s) linear var(--mdelay, 0s) infinite;
+  }
+  @keyframes mote-rise {
+    0% {
+      transform: translate3d(0, 0, 0);
+      opacity: 0;
+    }
+    15% {
+      opacity: 0.5;
+    }
+    80% {
+      opacity: 0.28;
+    }
+    100% {
+      transform: translate3d(var(--mdx, 20px), var(--mdy, -140px), 0);
+      opacity: 0;
+    }
+  }
+}
+
+/* ---- Ambient light -----------------------------------------------------
+   The hero's soft light source breathes on a 44-second alternate. Transform
+   only, and its host section is overflow-hidden, so the larger end of the
+   cycle stays inside the frame. */
+@media (prefers-reduced-motion: no-preference) {
+  .glow-orb {
+    animation: orb-drift 44s ease-in-out infinite alternate;
+  }
+  @keyframes orb-drift {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(-5rem, 3.5rem, 0) scale(1.14);
+    }
+  }
+
+  /* Copy confirmation. A visible counterpart to the screen-reader live
+     region: sighted readers get the same feedback, marked aria-hidden so it
+     is not announced twice. */
+  .toast-in {
+    animation: toast-in 340ms var(--ease-out-soft) both;
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* ---- Pointer spotlight -------------------------------------------------
+   --mx / --my are written by one shared pointermove listener. The gradient
+   is a background layer, so it paints behind the text and never over it.
+   Fine pointers only: there is no hover to follow on touch, and a stuck
+   :hover there would leave the highlight parked in one corner.
+
+   The gradient and the scan pass are additionally gated on motion being
+   allowed. A highlight that tracks the cursor is a moving thing, and the rule
+   on this site is that reduced motion means nothing on the page moves of its
+   own accord. What a reduced-motion reader keeps is the part that is a state,
+   not a movement: an instant border colour and an instant 3px lift, both with
+   their transitions flattened to 1ms by the kill switch at the end of this
+   file. */
+@media (hover: hover) and (pointer: fine) {
+  .card.spot {
+    transition:
+      border-color 260ms var(--ease-out-soft),
+      transform 260ms var(--ease-out-soft),
+      box-shadow 260ms var(--ease-out-soft);
+  }
+  .card.spot:hover,
+  .card.spot:focus-within {
+    border-color: color-mix(in srgb, var(--tan) 45%, transparent);
+    transform: translateY(-3px);
+    box-shadow: 0 22px 44px -30px rgba(0, 0, 0, 0.95);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .card.spot {
+    background-image: radial-gradient(
+      260px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in srgb, var(--spot-ink, var(--tan)) 14%, transparent),
+      transparent 72%
+    );
+  }
+  .on-sand .card.spot {
+    --spot-ink: #b4762f;
+  }
+  /* A single scan pass across the top edge: the one hover gesture every card
+     on the site shares, so the interaction reads as a system. */
+  .card.spot::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, var(--sable), transparent);
+    opacity: 0;
+    transition: opacity 200ms linear;
+  }
+  .card.spot:hover::after {
+    opacity: 0.8;
+    animation: card-scan 1600ms var(--ease-out-soft) 1;
+  }
+}
+
+@keyframes card-scan {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ---- Live schematics ---------------------------------------------------
+   The three project drawings run while the reader is on them: hovering a
+   card, or with the dialog open (.sch-live). `.group` is the literal class
+   the cards carry, so the selector below is the same thing as Tailwind's
+   group-hover, written here because the keyframes are. Amplitudes are
+   deliberately small — the drawing is a reading aid, not a screensaver. */
+@media (prefers-reduced-motion: no-preference) {
+  .ecu-sch .ecu-req,
+  .ecu-sch .ecu-rsp {
+    opacity: 0;
+  }
+  .ecu-sch.live .ecu-req,
+  .group:hover .ecu-sch .ecu-req {
+    animation: frame-out 3200ms linear infinite;
+  }
+  .ecu-sch.live .ecu-rsp,
+  .group:hover .ecu-sch .ecu-rsp {
+    animation: frame-back 3200ms linear 900ms infinite;
+  }
+  .ecu-sch.live .ecu-node,
+  .group:hover .ecu-sch .ecu-node {
+    animation: ecu-node-hit 3200ms ease-out infinite;
+  }
+  @keyframes frame-out {
+    0% {
+      transform: translate3d(0, 0, 0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate3d(132px, 0, 0);
+      opacity: 0;
+    }
+  }
+  @keyframes frame-back {
+    0% {
+      transform: translate3d(132px, 0, 0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate3d(0, 0, 0);
+      opacity: 0;
+    }
+  }
+  @keyframes ecu-node-hit {
+    0%,
+    20% {
+      fill: var(--brin-deep);
+    }
+    26% {
+      fill: var(--sable);
+    }
+    40% {
+      fill: var(--brin-deep);
+    }
+    100% {
+      fill: var(--brin-deep);
+    }
+  }
+
+  .acc-sch.live .acc-lead,
+  .group:hover .acc-sch .acc-lead {
+    animation: acc-close 5200ms ease-in-out infinite;
+  }
+  .acc-sch.live .acc-ctrl,
+  .group:hover .acc-sch .acc-ctrl {
+    animation: acc-think 2600ms ease-in-out infinite;
+  }
+  @keyframes acc-close {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(-26px, 0, 0);
+    }
+  }
+  @keyframes acc-think {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .bb-sch.live .bb-arm,
+  .group:hover .bb-sch .bb-arm {
+    animation: bb-steer 4200ms ease-in-out infinite;
+  }
+  .bb-sch.live .bb-ball,
+  .group:hover .bb-sch .bb-ball {
+    animation: bb-roll 4200ms ease-in-out infinite;
+  }
+  @keyframes bb-steer {
+    0%,
+    100% {
+      transform: rotate(1.1deg);
+    }
+    50% {
+      transform: rotate(-1.1deg);
+    }
+  }
+  @keyframes bb-roll {
+    0%,
+    100% {
+      transform: translate3d(-46px, 2.6px, 0);
+    }
+    50% {
+      transform: translate3d(46px, -2.6px, 0);
+    }
+  }
+
+  /* Timeline nodes on the experience rail: one ping each. Scoped to .rail-in
+     rather than firing on mount, because a card that is still at opacity 0
+     while the page scrolls towards it has already burnt through the 2.4s
+     animation by the time anybody sees it. */
+  .rail-in .ping::after {
+    content: '';
+    position: absolute;
+    inset: -7px;
+    border-radius: 9999px;
+    border: 1px solid var(--sable);
+    opacity: 0;
+    animation: node-ping 2400ms ease-out var(--ping, 0ms) 1 both;
+  }
+  @keyframes node-ping {
+    0% {
+      transform: scale(0.5);
+      opacity: 0.9;
+    }
+    70%,
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+
+  /* The rail's one live node. `transform-box: fill-box` anchors the scale to
+     the circle's own centre; without it the ring would grow away from the
+     line. Exactly one ring exists at a time, so this is the only unbounded
+     loop on the chrome besides the ambient drift. */
+  .rail-ping {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: rail-ping 2600ms ease-out infinite;
+  }
+  @keyframes rail-ping {
+    0% {
+      transform: scale(0.6);
+      opacity: 0.85;
+    }
+    70%,
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+
+  /* Certification stamp: the ring draws, then the mark settles. Keyed off
+   data-revealed rather than firing on mount — the stamp is a reward for
+   scrolling down to Formation, and at mount that scroll has not happened yet. */
+  [data-revealed] .stamp-on {
+    animation: stamp-in 620ms var(--ease-out-soft) 120ms both;
+  }
+  @keyframes stamp-in {
+    from {
+      opacity: 0;
+      transform: scale(0.86) rotate(-6deg);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Certification stamp: a quarter turn when the row is hovered, then it
+     settles. `.group` is the literal class those rows carry. */
+  .stamp-on:hover,
+  .group:hover .stamp-on {
+    animation: stamp-tip 720ms var(--ease-out-soft) 1;
+  }
+  @keyframes stamp-tip {
+    0% {
+      transform: none;
+    }
+    40% {
+      transform: rotate(-9deg) scale(1.06);
+    }
+    100% {
+      transform: none;
+    }
+  }
+
+  /* PLC ladder, inside the Holcim dialog: hovering it closes the contacts and
+     pushes current along each rung. Without `transform-box: fill-box` the
+     rotation would pivot on the SVG's origin instead of the contact's centre. */
+  .live-hover .contact {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      transform 280ms var(--ease-out-soft),
+      stroke 280ms linear;
+  }
+  .live-hover:hover .contact {
+    transform: rotate(45deg);
+    stroke: var(--sable);
+  }
+  .live-hover circle {
+    transition: stroke 280ms linear;
+  }
+  .live-hover:hover circle {
+    stroke: var(--sable);
+  }
+  .live-hover:hover > g > line:first-child {
+    stroke-dasharray: 6 10;
+    animation: rung-flow 700ms linear infinite;
+  }
+  @keyframes rung-flow {
+    to {
+      stroke-dashoffset: -16;
+    }
+  }
+}
+
+/* Press feedback. An inline transform (the magnetic buttons) wins over this
+   by design: a button that is already leaning towards the pointer keeps
+   leaning instead of snapping back to centre on mousedown. */
+@media (prefers-reduced-motion: no-preference) {
+  a[href]:active,
+  button:active,
+  [role='button']:active {
+    transform: scale(0.985);
+  }
+}
+
+/* Reduced-motion kill switch. The only things that still run on a timer are
+   the ambient drift and the motes, and both are removed rather than frozen:
+   a static version of a slowly drifting grid just looks like a mistake. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+  .mote {
+    display: none;
   }
   *,
   *::before,

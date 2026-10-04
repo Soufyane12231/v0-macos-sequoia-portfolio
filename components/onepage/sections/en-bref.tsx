@@ -102,7 +102,8 @@ function Figure({
       id={`figure-${id}`}
       data-reveal="scale"
       style={{ '--reveal-delay': `${delay}ms` } as React.CSSProperties}
-      className="card flex flex-col p-5 sm:p-6"
+      data-spot
+      className="card spot flex flex-col p-5 sm:p-6"
     >
       <p className="font-display text-[2.6rem] leading-none font-medium tracking-[-0.02em] text-brin">
         <span ref={ref}>{counted}</span>

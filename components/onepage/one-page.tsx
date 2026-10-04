@@ -14,7 +14,8 @@ import { t, ui } from '@/lib/portfolio-data'
 import { useLanguage } from '@/components/portfolio/language-provider'
 import { Cursor, DataBus, Footer, Header } from './chrome'
 import { CommandPalette, usePaletteHotkey } from './command-palette'
-import { RevealObserver } from './motion'
+import { Parallax, PointerSpotlight, RevealObserver } from './motion'
+import { ShortcutsDialog, useShortcutsHotkey } from './shortcuts'
 import { Contact } from './sections/contact'
 import { EnBref } from './sections/en-bref'
 import { Experience } from './sections/experience'
@@ -28,13 +29,16 @@ const TRACKED = ['en-bref', 'experience', 'projects', 'skills', 'parcours', 'con
 export function OnePage() {
   const { lang, toggleLang } = useLanguage()
   const [progress, setProgress] = useState(0)
+  const [scrolled, setScrolled] = useState(false)
   const [activeId, setActiveId] = useState('hero')
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const shortcuts = useShortcutsHotkey()
 
   usePaletteHotkey(useCallback(() => setPaletteOpen(true), []))
 
-  /* Scroll progress for the data bus, plus the section currently in view.
-     One rAF-throttled listener rather than one observer per section. */
+  /* Scroll progress for the data bus and the header rule, plus the section
+     currently in view. One rAF-throttled listener rather than one observer
+     per section. */
   useEffect(() => {
     let frame = 0
 
@@ -43,6 +47,9 @@ export function OnePage() {
       const doc = document.documentElement
       const scrollable = doc.scrollHeight - window.innerHeight
       setProgress(scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0)
+      // React bails out when the value is unchanged, so this only re-renders
+      // on the two frames where the page crosses the threshold.
+      setScrolled(window.scrollY > 24)
 
       // The active section is the last one whose top has passed 38% of the
       // viewport, which matches where a reader's attention sits.
@@ -84,9 +91,16 @@ export function OnePage() {
   return (
     <>
       <RevealObserver />
+      <Parallax />
+      <PointerSpotlight />
       <Cursor />
       <DataBus progress={progress} activeId={activeId} />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} lang={lang} onToggleLang={toggleLang} />
+      <ShortcutsDialog
+        open={shortcuts.open}
+        onClose={() => shortcuts.setOpen(false)}
+        lang={lang}
+      />
 
       <a href="#main" className="skip-link">
         {t(ui.skipToContent, lang)}
@@ -97,10 +111,13 @@ export function OnePage() {
         onToggleLang={toggleLang}
         activeId={activeId}
         onOpenPalette={() => setPaletteOpen(true)}
+        onOpenShortcuts={() => shortcuts.setOpen(true)}
+        progress={progress}
+        scrolled={scrolled}
       />
 
       <main id="main">
-        <Hero lang={lang} />
+        <Hero lang={lang} onOpenPalette={() => setPaletteOpen(true)} />
         <EnBref lang={lang} />
         <Experience lang={lang} />
         <Projects lang={lang} />

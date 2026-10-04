@@ -38,7 +38,9 @@ export function Section({
       aria-labelledby={headingId}
       className={`relative scroll-mt-24 border-t border-line-soft ${tone === 'sand' ? 'on-sand' : ''} ${className ?? ''}`}
     >
-      {tone === 'dark' ? <SectionBackdrop variant={backdrop} /> : null}
+      {tone === 'dark' ? (
+        <SectionBackdrop variant={backdrop} seed={Number(index) || 1} />
+      ) : null}
       {tone === 'sand' ? (
         <div
           aria-hidden="true"
@@ -52,7 +54,17 @@ export function Section({
       ) : null}
 
       <div className="shell relative py-20 sm:py-28">
-        <header className="max-w-3xl">
+        {/* Three different entrances for the three header lines, so a
+            seven-section page does not repeat one gesture everywhere. All of
+            them are decoration on text that is already in the markup: under
+            reduced motion none of the hiding rules apply and the header is
+            simply there. */}
+        {/* The three header lines reveal as one stack driven by a single observed
+            element. The heading's clip is deliberately not on this element:
+            Chrome folds an element's own clip-path into its
+            IntersectionObserver intersection rect, so a clipped target measures
+            zero intersection and would never be revealed at all. */}
+        <header className="max-w-3xl" data-reveal="stack">
           <p className="eyebrow flex items-center gap-3">
             {/* The trailing space is load-bearing: whitespace-only text inside
                 a flex container produces no box, so it costs nothing visually,

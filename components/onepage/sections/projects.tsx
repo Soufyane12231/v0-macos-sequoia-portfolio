@@ -144,16 +144,11 @@ export function Projects({ lang }: { lang: 'fr' | 'en' }) {
         })}
       </div>
 
-      <ul className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {visible.map((project, index) => (
-          <li
-            key={project.id}
-            data-reveal="scale"
-            style={{ '--reveal-delay': `${index * 90}ms` } as React.CSSProperties}
-            className="h-full"
-          >
+      <ul key={filter} data-stagger data-stagger-step="80" className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {visible.map((project) => (
+          <li key={project.id} className="h-full">
             <Tilt>
-              <article className="card group flex h-full flex-col">
+              <article className="card group spot flex h-full flex-col" data-spot>
                 {/* Technical plate: the stand-in for a project screenshot.
                     Same box, same aspect ratio, whether or not media exists. */}
                 <div className="relative aspect-[16/10] overflow-hidden border-b border-line-soft bg-brin-deep px-4 py-3">
@@ -213,15 +208,31 @@ export function Projects({ lang }: { lang: 'fr' | 'en' }) {
         {open ? (
           <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr]">
             <div>
-              <div className="aspect-[16/10] border border-line-soft bg-brin-deep px-4 py-3">
-                <ProjectSchematic kind={open.schematic} />
+              <div
+                className="aspect-[16/10] border border-line-soft bg-brin-deep px-4 py-3"
+                data-reveal="scale"
+                style={{ '--reveal-delay': '80ms' } as React.CSSProperties}
+              >
+                {/* Live: the drawing runs while the reader has the dialog open,
+                    which is the one moment they are looking straight at it. */}
+                <ProjectSchematic kind={open.schematic} live />
               </div>
               <Gallery project={open} lang={lang} />
             </div>
 
             <div>
-              <p className="body-copy text-[0.975rem]">{t(open.description, lang)}</p>
-              <ul className="mt-6 space-y-4 border-t border-line-soft pt-6">
+              <p
+                className="body-copy text-[0.975rem]"
+                data-reveal="left"
+                style={{ '--reveal-delay': '40ms' } as React.CSSProperties}
+              >
+                {t(open.description, lang)}
+              </p>
+              <ul
+                data-stagger
+                data-stagger-step="70"
+                className="mt-6 space-y-4 border-t border-line-soft pt-6"
+              >
                 {open.highlightsList.map((item) => (
                   <li key={item.en} className="flex gap-3.5">
                     <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rotate-45 bg-sable" />

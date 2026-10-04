@@ -2,8 +2,11 @@
 
 /**
  * G. Contact — the only section that carries LinkedIn, GitHub, the email
- * address, the phone number and the site link. The CV download button is the
- * one documented exception (it also appears in the header).
+ * address, the phone number and the site link.
+ *
+ * The "Télécharger le CV" button that used to close this section is gone: it
+ * lives in the sticky header and nowhere else. The CV filename went with it,
+ * because a filename printed under a button is the same information twice.
  *
  * The form does not submit anywhere: it composes a `mailto:` with a prefilled
  * subject and body, and the copy says so explicitly. No third-party service,
@@ -11,7 +14,7 @@
  */
 
 import { useState } from 'react'
-import { contact, hero, site, t, ui } from '@/lib/portfolio-data'
+import { contact, site, t, ui } from '@/lib/portfolio-data'
 import { Section } from '../section'
 
 type Copied = 'email' | 'phone' | null
@@ -49,7 +52,11 @@ export function Contact({ lang }: { lang: 'fr' | 'en' }) {
         <div>
           <p className="body-copy text-[1.02rem] text-sable">{t(contact.kicker, lang)}</p>
 
-          <dl className="mt-8 divide-y divide-line-soft border-y border-line-soft">
+          <dl
+            data-stagger
+            data-stagger-step="70"
+            className="mt-8 divide-y divide-line-soft border-y border-line-soft"
+          >
             <ContactRow label={t(contact.links.email, lang)}>
               <a href={`mailto:${site.email}`} className="link-underline break-all">
                 {site.email}
@@ -102,20 +109,6 @@ export function Contact({ lang }: { lang: 'fr' | 'en' }) {
               </a>
             </ContactRow>
           </dl>
-
-          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2">
-            <a
-              href={site.links.cv}
-              download={site.links.cvFileName}
-              className="brass inline-flex items-center gap-2.5 px-5 py-3 font-mono text-[0.72rem] tracking-[0.12em] text-brin uppercase transition-[filter] duration-200 hover:brightness-105"
-            >
-              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
-                <path d="M8 1.5v9M4.5 7.5 8 11l3.5-3.5M2 13.5h12" />
-              </svg>
-              {t(hero.ctaPrimary, lang)}
-            </a>
-            <p className="mono text-[0.6rem] tracking-[0.1em] text-muted uppercase">{site.links.cvFileName}</p>
-          </div>
         </div>
 
         {/* ---------------- mailto composer ---------------- */}
@@ -148,7 +141,8 @@ export function Contact({ lang }: { lang: 'fr' | 'en' }) {
               `${t(contact.mailSubject, lang)} — ${name}`,
             )}&body=${encodeURIComponent(body)}`
           }}
-          className="card p-6 sm:p-8"
+          className="card spot h-fit p-6 sm:p-8"
+          data-spot
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <Field id="c-name" label={t(contact.form.name, lang)} required>
@@ -214,7 +208,17 @@ export function Contact({ lang }: { lang: 'fr' | 'en' }) {
         </form>
       </div>
 
-      {/* Copy confirmation: polite, so it never interrupts a screen reader. */}
+      {/* Copy confirmation. Two of them on purpose: the live region below is
+          what a screen reader announces, and the toast is what everyone else
+          sees. The toast is aria-hidden, so nothing is announced twice. */}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none fixed right-4 bottom-4 z-[70] border border-tan/60 bg-surface px-4 py-2.5 font-mono text-[0.68rem] tracking-[0.12em] text-sable uppercase shadow-lg shadow-brin-deep/60 ${
+          toast ? 'toast-in opacity-100' : 'opacity-0'
+        }`}
+      >
+        {toast}
+      </div>
       <div aria-live="polite" role="status" className="sr-only">
         {toast}
       </div>
@@ -228,8 +232,13 @@ export function Contact({ lang }: { lang: 'fr' | 'en' }) {
 
 function ContactRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 py-4">
-      <dt className="mono w-full text-[0.6rem] tracking-[0.16em] text-muted uppercase sm:w-24">{label}</dt>
+    <div className="group flex flex-wrap items-center gap-x-4 gap-y-1 py-4">
+      <dt className="mono flex w-full items-center gap-2 text-[0.6rem] tracking-[0.16em] text-muted uppercase transition-colors duration-200 group-hover:text-sable sm:w-24">
+        {/* A tick that draws in from nothing: the row's hover cue. Empty and
+            aria-hidden, so it adds nothing to the accessible name. */}
+        <span aria-hidden="true" className="h-px w-0 shrink-0 bg-sable transition-[width] duration-300 group-hover:w-3" />
+        {label}
+      </dt>
       <dd className="flex min-w-0 flex-1 flex-wrap items-center gap-3 text-[0.95rem] text-menthe">{children}</dd>
     </div>
   )
