@@ -357,13 +357,16 @@ export function Parallax() {
  */
 export function PointerSpotlight() {
   useEffect(() => {
-    if (!window.matchMedia('(pointer: fine)').matches) return
     let frame = 0
     let host: HTMLElement | null = null
     let x = 0
     let y = 0
 
+    // Mouse/pen move the light. The listener is only attached for fine
+    // pointers, but it is always safe to remove.
+    const fine = window.matchMedia('(pointer: fine)').matches
     const onMove = (event: PointerEvent) => {
+      if (!fine) return
       const target = event.target as Element | null
       const next = target?.closest?.<HTMLElement>('[data-spot]') ?? null
       host = next
@@ -380,11 +383,39 @@ export function PointerSpotlight() {
         host.style.setProperty('--my', `${(((y - box.top) / box.height) * 100).toFixed(2)}%`)
       })
     }
+    if (fine) window.addEventListener('pointermove', onMove, { passive: true })
 
-    window.addEventListener('pointermove', onMove, { passive: true })
+    // Touch and pen have no hover to ride on, so press the card to light it
+    // and release to clear; the gradient under the finger is the touch twin of
+    // the hover spotlight.
+    const clearTaps = () => {
+      document
+        .querySelectorAll('[data-spot-active]')
+        .forEach((card) => card.removeAttribute('data-spot-active'))
+    }
+    const onDown = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse') return
+      const card = (event.target as Element | null)?.closest?.<HTMLElement>('[data-spot]')
+      if (!card) return
+      const box = card.getBoundingClientRect()
+      if (!box.width || !box.height) return
+      card.style.setProperty('--mx', `${(((event.clientX - box.left) / box.width) * 100).toFixed(2)}%`)
+      card.style.setProperty('--my', `${(((event.clientY - box.top) / box.height) * 100).toFixed(2)}%`)
+      card.setAttribute('data-spot-active', '')
+    }
+    window.addEventListener('pointerdown', onDown, { passive: true })
+    window.addEventListener('pointerup', clearTaps, { passive: true })
+    window.addEventListener('pointercancel', clearTaps, { passive: true })
+
     return () => {
       if (frame) cancelAnimationFrame(frame)
+      document
+        .querySelectorAll<HTMLElement>('[data-spot-active]')
+        .forEach((card) => card.removeAttribute('data-spot-active'))
       window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('pointerup', clearTaps)
+      window.removeEventListener('pointercancel', clearTaps)
     }
   }, [])
   return null

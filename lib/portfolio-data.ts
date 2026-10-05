@@ -102,6 +102,8 @@ export const hero = {
   ctaSecondary: { fr: 'Me contacter', en: 'Get in touch' } satisfies L,
   /** Opens the command palette, so the hero advertises the keyboard route. */
   ctaNav: { fr: 'Navigation rapide', en: 'Quick navigation' } satisfies L,
+  /** The small scroll affordance at the foot of the hero. */
+  scrollHint: { fr: 'Défiler', en: 'Scroll' } satisfies L,
   photoAlt: {
     fr: 'Portrait de Soufyane Elaouni',
     en: 'Portrait of Soufyane Elaouni',

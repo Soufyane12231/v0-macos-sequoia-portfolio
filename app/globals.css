@@ -552,6 +552,31 @@ body::before {
   }
 }
 
+/* Hero scroll hint: one dot runs down the hairline a few times, then stops.
+   Reduced-motion readers just get the static line. */
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-hint__dot {
+    animation: hint-dot 1800ms var(--ease-out-soft) 900ms 4 both;
+  }
+}
+@keyframes hint-dot {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  62% {
+    transform: translate3d(0, 26px, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 30px, 0);
+    opacity: 0;
+  }
+}
+
 /* Hero scan line: one pass on load, then it stops existing. */
 @media (prefers-reduced-motion: no-preference) {
   .scan-once {
@@ -780,19 +805,26 @@ body::before {
    not a movement: an instant border colour and an instant 3px lift, both with
    their transitions flattened to 1ms by the kill switch at the end of this
    file. */
+.card.spot {
+  transition:
+    border-color 260ms var(--ease-out-soft),
+    transform 260ms var(--ease-out-soft),
+    box-shadow 260ms var(--ease-out-soft);
+}
 @media (hover: hover) and (pointer: fine) {
-  .card.spot {
-    transition:
-      border-color 260ms var(--ease-out-soft),
-      transform 260ms var(--ease-out-soft),
-      box-shadow 260ms var(--ease-out-soft);
-  }
   .card.spot:hover,
   .card.spot:focus-within {
     border-color: color-mix(in srgb, var(--tan) 45%, transparent);
     transform: translateY(-3px);
     box-shadow: 0 22px 44px -30px rgba(0, 0, 0, 0.95);
   }
+}
+/* Touch press: the card answers a tap with a small settle, which is the one
+   bit of tactile feedback the gradient hover cannot give a touchscreen. The
+   kill switch at the end of this file flattens the transition for reduce. */
+.card.spot:active {
+  transform: translateY(1px) scale(0.995);
+  border-color: color-mix(in srgb, var(--tan) 55%, transparent);
 }
 
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
@@ -804,6 +836,19 @@ body::before {
     );
   }
   .on-sand .card.spot {
+    --spot-ink: #b4762f;
+  }
+  /* Same spotlight, driven by touch. The hover rule above cannot run on a
+     touchscreen, so a tap sets data-spot-active on the card and the gradient
+     appears under the finger; it clears on release. */
+  .card.spot[data-spot-active] {
+    background-image: radial-gradient(
+      260px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in srgb, var(--spot-ink, var(--tan)) 14%, transparent),
+      transparent 72%
+    );
+  }
+  .on-sand .card.spot[data-spot-active] {
     --spot-ink: #b4762f;
   }
   /* A single scan pass across the top edge: the one hover gesture every card

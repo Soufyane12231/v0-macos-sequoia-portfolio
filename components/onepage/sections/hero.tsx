@@ -134,6 +134,16 @@ export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette
           />
         </div>
       </div>
+
+      {/* Scroll affordance. A hairline with one dot travelling down it, a few
+          passes then it stops; it carries no information, so it is hidden from
+          assistive technology and reduced-motion readers get a plain line. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-5 flex flex-col items-center gap-2">
+        <span className="mono text-[0.58rem] tracking-[0.22em] text-muted uppercase">{t(hero.scrollHint, lang)}</span>
+        <span className="relative h-8 w-px overflow-hidden bg-line">
+          <span className="scroll-hint__dot absolute top-0 left-0 h-2 w-px bg-sable" />
+        </span>
+      </div>
     </section>
   )
 }
