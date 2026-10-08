@@ -47,9 +47,11 @@ function RevealedName({ name }: { name: string }) {
 }
 
 export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette: () => void }) {
-  // Portrait plate: cropped 4/5 at the source (head and shoulders, subject
-  // filling the frame) so the file and the box agree exactly — object-cover
-  // then has nothing left to crop. 88 KB, down from a 1.5 MB source PNG.
+  // Portrait plate: cropped 4/5 at the source — wide enough that the head
+  // reads as a portrait rather than a close-up, torso entering at the foot —
+  // so the file and the box agree exactly and object-cover has nothing left
+  // to crop. No caption sits on the photo: the figures it used to carry
+  // belong to "En bref" alone. 86 KB, down from a 1.5 MB source PNG.
   const [photoSrc] = useState<string | undefined>('/photo-soufyane.webp')
   const photoAlt = t(hero.photoAlt, lang)
 
@@ -131,15 +133,7 @@ export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette
         </div>
 
         <div data-reveal="scale" style={{ '--reveal-delay': '240ms' } as React.CSSProperties}>
-          <PortraitFrame
-            src={photoSrc}
-            alt={photoAlt}
-            badge={
-              <p className="mono text-[0.6rem] leading-relaxed tracking-[0.12em] text-sable uppercase">
-                {t(hero.badge, lang)}
-              </p>
-            }
-          />
+          <PortraitFrame src={photoSrc} alt={photoAlt} />
         </div>
       </div>
 

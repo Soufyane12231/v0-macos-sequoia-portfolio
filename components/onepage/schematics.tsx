@@ -103,12 +103,10 @@ export function PortraitFrame({
   src,
   alt,
   children,
-  badge,
 }: {
   src?: string
   alt: string
   children?: React.ReactNode
-  badge?: React.ReactNode
 }) {
   return (
     <div className="relative">
@@ -163,12 +161,6 @@ export function PortraitFrame({
           <circle cx="50" cy="62.5" r="21" fill="none" stroke={S.sand} strokeWidth="0.3" vectorEffect="non-scaling-stroke" opacity="0.18" />
           <circle cx="50" cy="62.5" r="30" fill="none" stroke={S.sand} strokeWidth="0.3" vectorEffect="non-scaling-stroke" opacity="0.12" />
         </svg>
-
-        {badge ? (
-          <div className="absolute inset-x-0 bottom-0 border-t border-line bg-brin/85 px-3 py-2 backdrop-blur-sm">
-            {badge}
-          </div>
-        ) : null}
       </div>
 
       <svg {...DECO} className="pointer-events-none absolute -bottom-4 left-1/2 h-8 w-px -translate-x-1/2" viewBox="0 0 1 32" preserveAspectRatio="none">

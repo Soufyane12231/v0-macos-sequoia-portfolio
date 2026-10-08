@@ -108,10 +108,6 @@ export const hero = {
     fr: 'Portrait de Soufyane Elaouni',
     en: 'Portrait of Soufyane Elaouni',
   } satisfies L,
-  badge: {
-    fr: 'Diagnostic embarqué · 9 calculateurs · 19 s',
-    en: 'Embedded diagnostics · 9 control units · 19 s',
-  } satisfies L,
 } satisfies Record<string, unknown>
 
 /* ------------------------------------------------------------------ */
