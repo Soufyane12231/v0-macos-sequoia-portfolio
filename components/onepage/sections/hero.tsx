@@ -10,10 +10,11 @@
  * not a call to action, so the header keeps the only visible one and this
  * section offers contact plus the keyboard route into the whole page.
  *
- * Portrait handling: the frame is sized and drawn like a technical plate, so
- * `photo.jpg` can land later as a pure asset swap. With no portrait present
- * the frame shows a monogram instead of an <img>, and the alt text lives in
- * the caption either way.
+ * Portrait handling: the frame is sized and drawn like a technical plate and
+ * holds `photo-soufyane.webp`, pre-cropped to the plate's 4/5 box and
+ * flattened onto the frame colour so the cut-out edges sit seamlessly on the
+ * petrol behind them. The monogram branch stays as the fallback if the asset
+ * ever goes missing; the alt text lives in the caption either way.
  */
 
 import { useState } from 'react'
@@ -46,9 +47,10 @@ function RevealedName({ name }: { name: string }) {
 }
 
 export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette: () => void }) {
-  // No portrait has been dropped into /public yet; set this to
-  // '/photo-soufyane.jpg' once the file exists and nothing else changes.
-  const [photoSrc] = useState<string | undefined>(undefined)
+  // Portrait plate: cropped 4/5 at the source (head and shoulders, subject
+  // filling the frame) so the file and the box agree exactly — object-cover
+  // then has nothing left to crop. 88 KB, down from a 1.5 MB source PNG.
+  const [photoSrc] = useState<string | undefined>('/photo-soufyane.webp')
   const photoAlt = t(hero.photoAlt, lang)
 
   return (
@@ -61,7 +63,13 @@ export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette
         style={{ background: 'radial-gradient(circle, #0f4a4b 0%, transparent 68%)' }}
       />
 
-      <div className="shell relative grid items-center gap-14 py-16 sm:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20 lg:py-28">
+      {/* The portrait column carries the larger share: the face is the one
+          thing on the page a reader must recognise instantly, so the plate
+          gets 52% of the row instead of 42%. The name still sets on two
+          lines either way — each word fits inside the narrower text column.
+          Bottom padding keeps the scroll hint (74px tall) clear of the
+          plate on phones, where the grid is one column deep. */}
+      <div className="shell relative grid items-center gap-14 pt-16 pb-24 sm:py-24 lg:grid-cols-[1fr_1.1fr] lg:gap-20 lg:py-28">
         <div>
           {/* Plain scroll-reveal, not a "veil": the veil keyframes ended at
             visibility:hidden for forwards fill, which is correct for a curtain

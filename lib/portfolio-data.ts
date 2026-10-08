@@ -108,11 +108,6 @@ export const hero = {
     fr: 'Portrait de Soufyane Elaouni',
     en: 'Portrait of Soufyane Elaouni',
   } satisfies L,
-  /** Rendered only when no portrait file has been dropped into /public. */
-  photoPlaceholder: {
-    fr: 'Portrait à venir',
-    en: 'Portrait coming soon',
-  } satisfies L,
   badge: {
     fr: 'Diagnostic embarqué · 9 calculateurs · 19 s',
     en: 'Embedded diagnostics · 9 control units · 19 s',
