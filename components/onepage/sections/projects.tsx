@@ -170,7 +170,7 @@ function Slider({
                 data-slide-index={i}
                 src={slide.src}
                 alt={slide.alt}
-                loading={i === 0 ? 'eager' : 'lazy'}
+                loading={compact && i > 0 ? 'lazy' : 'eager'}
                 draggable={false}
                 className={`h-full w-full shrink-0 ${compact ? 'object-cover' : 'object-contain'}`}
               />
