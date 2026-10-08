@@ -413,7 +413,12 @@ export const projects: Project[] = [
     context: 'school',
     contextLabel: { fr: 'Projet académique', en: 'School project' },
     schematic: 'acc',
-    images: [],
+    images: [
+      '/project-acc-01.webp',
+      '/project-acc-02.webp',
+      '/project-acc-03.webp',
+      '/project-acc-04.webp',
+    ],
   },
   {
     id: 'ball-beam',
