@@ -335,7 +335,7 @@ export interface Project {
   context: 'work' | 'school'
   contextLabel: L
   schematic: 'ecu' | 'acc' | 'ballbeam'
-  /** Optional gallery images; empty until real media is dropped into /public. */
+  /** Gallery media. Empty until real files are dropped into /public. */
   images: string[]
 }
 
@@ -376,7 +376,13 @@ export const projects: Project[] = [
     context: 'work',
     contextLabel: { fr: 'Projet de stage', en: 'Internship project' },
     schematic: 'ecu',
-    images: [],
+    images: [
+      '/project-ecu-01.webp',
+      '/project-ecu-02.webp',
+      '/project-ecu-03.webp',
+      '/project-ecu-04.webp',
+      '/project-ecu-05.webp',
+    ],
   },
   {
     id: 'acc',
@@ -686,6 +692,7 @@ export const ui = {
   closeDialog: { fr: 'Fermer la fenêtre', en: 'Close dialog' } satisfies L,
   contextStack: { fr: 'Technologies', en: 'Technologies' } satisfies L,
   gallery: { fr: 'Galerie', en: 'Gallery' } satisfies L,
+  gallerySwipe: { fr: 'Glissez pour parcourir', en: 'Swipe to browse' } satisfies L,
   galleryEmpty: {
     fr: 'Visuel de travail à venir. Le schéma ci-dessus illustre le principe.',
     en: 'Work visual coming soon. The schematic above illustrates the principle.',
