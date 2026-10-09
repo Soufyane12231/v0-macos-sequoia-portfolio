@@ -539,10 +539,13 @@ export const education = [
 
 export const certifications = [
   {
-    id: 'abb',
-    title: { fr: 'Robotique industrielle — ABB', en: 'Industrial robotics — ABB' } satisfies L,
-    issuer: 'Udemy',
-    year: '2025',
+    id: 'iso26262',
+    title: {
+      fr: 'ISO 26262 — Sécurité fonctionnelle',
+      en: 'ISO 26262 — Functional safety',
+    } satisfies L,
+    issuer: 'Ansys',
+    year: '2026',
   },
   {
     id: 'ge',
@@ -554,12 +557,9 @@ export const certifications = [
     year: '2026',
   },
   {
-    id: 'datacamp',
-    title: {
-      fr: "Travailler avec l'API OpenAI",
-      en: 'Working with the OpenAI API',
-    } satisfies L,
-    issuer: 'DataCamp',
+    id: 'abb',
+    title: { fr: 'Robotique industrielle — ABB', en: 'Industrial robotics — ABB' } satisfies L,
+    issuer: 'Udemy',
     year: '2025',
   },
 ]
