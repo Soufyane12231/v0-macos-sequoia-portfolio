@@ -134,7 +134,7 @@ function Slider({
   }
 
   const arrow =
-    'absolute top-1/2 z-10 grid -translate-y-1/2 place-items-center border border-line bg-brin-deep/90 text-menthe backdrop-blur-sm transition-colors duration-200 hover:border-tan hover:text-sable'
+    'absolute top-1/2 z-10 grid -translate-y-1/2 place-items-center border border-line bg-scrim/85 text-on-scrim backdrop-blur-sm transition-colors duration-200 hover:border-accent hover:text-accent'
   const arrowSize = compact ? 'h-7 w-7' : 'h-9 w-9'
 
   return (
@@ -152,7 +152,7 @@ function Slider({
           onPointerUp={settle}
           onPointerCancel={settle}
           style={{ touchAction: 'pan-y' }}
-          className={`relative overflow-hidden bg-brin-deep select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal ${
+          className={`relative overflow-hidden bg-bg-alt select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal ${
             compact ? 'h-full w-full cursor-grab' : 'aspect-[16/10] border border-line-soft cursor-grab'
           } ${dragging ? 'cursor-grabbing' : ''}`}
         >
@@ -210,7 +210,7 @@ function Slider({
         ) : null}
 
         {compact && count > 1 ? (
-          <div className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-brin-deep/90 px-2 py-1 backdrop-blur-sm">
+          <div className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-scrim/85 px-2 py-1 backdrop-blur-sm">
             {slides.map((slide, i) => (
               <button
                 key={slide.src}
@@ -220,7 +220,7 @@ function Slider({
                 aria-label={`${label} — ${i + 1}/${count}`}
                 aria-current={i === index ? 'true' : undefined}
                 className={`h-1.5 w-1.5 rounded-full transition-colors duration-200 ${
-                  i === index ? 'bg-sable' : 'bg-menthe/70 hover:bg-tan'
+                  i === index ? 'bg-accent' : 'bg-on-scrim/60 hover:bg-on-scrim'
                 }`}
               />
             ))}
@@ -332,7 +332,7 @@ export function Projects({ lang }: { lang: 'fr' | 'en' }) {
               <article className="card group spot flex h-full flex-col" data-spot>
                 {/* Technical plate: real media where it exists, the schematic
                     as the stand-in otherwise. Same box, same aspect ratio. */}
-                <div className="relative aspect-[16/10] overflow-hidden border-b border-line-soft bg-brin-deep">
+                <div className="relative aspect-[16/10] overflow-hidden border-b border-line-soft bg-bg-alt">
                   {project.images.length > 0 ? (
                     <Slider
                       lang={lang}
@@ -351,10 +351,10 @@ export function Projects({ lang }: { lang: 'fr' | 'en' }) {
                     </div>
                   )}
                   <span
-                    className={`mono pointer-events-none absolute top-2 left-3 z-20 text-[0.55rem] tracking-[0.16em] text-muted uppercase ${
+                    className={`mono pointer-events-none absolute top-2 left-3 z-20 text-[0.55rem] tracking-[0.16em] uppercase ${
                       project.images.length > 0
-                        ? 'border border-line-soft bg-brin-deep/90 px-1.5 py-0.5 backdrop-blur-sm'
-                        : ''
+                        ? 'border border-line-soft bg-scrim/85 px-1.5 py-0.5 text-on-scrim backdrop-blur-sm'
+                        : 'text-muted'
                     }`}
                   >
                     {project.id}
@@ -363,7 +363,7 @@ export function Projects({ lang }: { lang: 'fr' | 'en' }) {
 
                 <div className="flex flex-1 flex-col p-5">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="mono text-[0.6rem] tracking-[0.14em] text-tan uppercase">
+                    <p className="mono text-[0.6rem] tracking-[0.14em] text-accent-2-ink uppercase">
                       {t(projectCategories[project.category], lang)}
                     </p>
                     <p className="mono text-[0.6rem] tracking-[0.1em] text-muted uppercase">
@@ -410,7 +410,7 @@ export function Projects({ lang }: { lang: 'fr' | 'en' }) {
           <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr]">
             <div>
               <div
-                className="aspect-[16/10] border border-line-soft bg-brin-deep px-4 py-3"
+                className="aspect-[16/10] border border-line-soft bg-bg-alt px-4 py-3"
                 data-reveal="scale"
                 style={{ '--reveal-delay': '80ms' } as React.CSSProperties}
               >

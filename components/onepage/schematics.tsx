@@ -16,13 +16,13 @@
 import type { CSSProperties } from 'react'
 
 const S = {
-  line: 'var(--line)',
-  soft: 'var(--line-soft)',
-  ink: 'var(--menthe)',
-  muted: 'var(--muted)',
-  sand: 'var(--sable)',
-  tan: 'var(--tan)',
-  signal: 'var(--signal)',
+  line: 'var(--line-art)',
+  soft: 'var(--line-art-soft)',
+  ink: 'var(--text)',
+  muted: 'var(--text-muted)',
+  sand: 'var(--accent-ink)',
+  tan: 'var(--accent-2-ink)',
+  signal: 'var(--focus)',
 } as const
 
 const DECO = { 'aria-hidden': true, focusable: false } as const
@@ -82,7 +82,7 @@ export function BusTrace({
               cx="14"
               cy="0"
               r={lit ? 4.5 : 2.6}
-              fill={lit ? S.sand : 'var(--brin)'}
+              fill={lit ? S.sand : 'var(--surface)'}
               stroke={lit ? S.sand : S.line}
               strokeWidth="1.5"
               vectorEffect="non-scaling-stroke"
@@ -130,7 +130,7 @@ export function PortraitFrame({
         <line x1="98" y1="128.5" x2="98" y2="133.5" stroke={S.line} strokeWidth="0.4" vectorEffect="non-scaling-stroke" />
       </svg>
 
-      <div className="relative aspect-[4/5] overflow-hidden border border-line bg-brin-deep">
+      <div className="relative aspect-[4/5] overflow-hidden border border-line bg-bg-alt">
         {src ? (
           // Real media and the placeholder occupy the exact same box: swapping
           // one for the other is an asset change, not a layout change.
@@ -141,7 +141,7 @@ export function PortraitFrame({
             style={{ objectPosition: 'center 22%' }}
           />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[radial-gradient(ellipse_at_50%_35%,#0d3a3b_0%,#05181a_70%)]">
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[radial-gradient(ellipse_at_50%_35%,var(--color-surface)_0%,var(--color-bg-alt)_70%)]">
             <span
               className="font-display text-[4.5rem] leading-none font-medium tracking-tight text-sable/85 select-none"
               aria-hidden="true"
@@ -224,7 +224,7 @@ function Row({
             reads correctly on either substrate. */}
         <span className={`duel-label${variant === 'after' ? ' duel-label-after' : ''}`}>{label}</span>
       </div>
-      <div className="relative h-2 w-full overflow-hidden border border-line" style={{ background: 'color-mix(in srgb, var(--brin-deep) 70%, transparent)' }}>
+      <div className="relative h-2 w-full overflow-hidden border border-line" style={{ background: 'color-mix(in srgb, var(--color-text) 12%, transparent)' }}>
         <div
           className="bar-grow absolute inset-y-0 left-0 origin-left"
           style={
@@ -267,7 +267,7 @@ export function EcuBus({ running }: { running: boolean }) {
             y="3"
             width="6"
             height="6"
-            fill="var(--brin)"
+            fill="var(--surface)"
             stroke={S.line}
             strokeWidth="1.2"
             vectorEffect="non-scaling-stroke"
@@ -417,7 +417,7 @@ function EcuSchematic({ live }: { live: boolean }) {
             y="28"
             width="16"
             height="18"
-            fill="var(--brin-deep)"
+            fill="var(--surface)"
             stroke={S.tan}
             strokeWidth="1.2"
           />
@@ -430,13 +430,13 @@ function EcuSchematic({ live }: { live: boolean }) {
           and one comes back. The travel distance is the loop length in
           globals.css, so the two rules there stay in step with these boxes. */}
       <g className="ecu-req">
-        <rect x="96" y="88" width="52" height="14" fill="var(--brin-deep)" stroke={S.sand} strokeWidth="1" />
+        <rect x="96" y="88" width="52" height="14" fill="var(--surface)" stroke={S.sand} strokeWidth="1" />
         <text x="122" y="98" fill={S.sand} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
           0x7DF REQ
         </text>
       </g>
       <g className="ecu-rsp">
-        <rect x="96" y="108" width="52" height="14" fill="var(--brin-deep)" stroke={S.sand} strokeWidth="1" />
+        <rect x="96" y="108" width="52" height="14" fill="var(--surface)" stroke={S.sand} strokeWidth="1" />
         <text x="122" y="118" fill={S.sand} fontSize="6" textAnchor="middle" fontFamily="var(--font-jetbrains), monospace">
           0x7E8 RSP
         </text>
@@ -548,7 +548,7 @@ function BallBeamSchematic({ live }: { live: boolean }) {
 
 export function CertStamp({ year }: { year: string }) {
   return (
-    <span {...DECO} className="stamp-on inline-grid h-14 w-14 shrink-0 place-items-center rounded-full border border-dashed border-tan/70 text-tan">
+    <span {...DECO} className="stamp-on inline-grid h-14 w-14 shrink-0 place-items-center rounded-full border border-dashed border-tan/70 text-accent-2-ink">
       <svg viewBox="0 0 40 40" className="h-full w-full" aria-hidden="true">
         <circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.5" />
         <circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.35" />
@@ -612,7 +612,7 @@ export function Motes({ count = 8, seed = 1 }: { count?: number; seed?: number }
 }
 
 /**
- * The technical-drawing substrate behind dark sections. Extremely low
+ * The technical-drawing substrate behind every section. Extremely low
  * contrast on purpose: it must never compete with body text.
  *
  * Three layers, all clipped by the wrapper:

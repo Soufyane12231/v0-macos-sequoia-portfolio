@@ -47,7 +47,7 @@ export function Section({
           className="pointer-events-none absolute inset-0 opacity-[0.16]"
           style={{
             backgroundImage:
-              'linear-gradient(to right, rgba(8,39,40,0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(8,39,40,0.5) 1px, transparent 1px)',
+              'linear-gradient(to right, color-mix(in srgb, var(--color-text) 50%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--color-text) 50%, transparent) 1px, transparent 1px)',
             backgroundSize: '64px 64px',
           }}
         />

@@ -1,18 +1,24 @@
 @import 'tailwindcss';
 
 /* ==================================================================
-   Design tokens — sampled from the reference artwork, not invented.
+   Design tokens — « Chaleur douce », a single light theme.
 
-   Base scale (deep petrol teal) + one warm complement (sand) that does
-   every accent job, plus a single functional orange reserved for focus
-   rings, the cursor and active states.
+   A warm cream ground, a sable-clair second plane, blue-ink type and a
+   terracotta accent, with sage as the quiet second accent. No dark mode.
 
-   Measured contrast on --brin (#05181a):
-     menthe  #d2eae4  14.9 : 1   (AAA)
-     muted   #8fb3ae   8.0 : 1   (AAA, body-copy safe)
-     sable   #fecb9b  12.4 : 1   (AAA)
-     signal  #ff7a1a   7.0 : 1   (AA)
-   On the sand panel, petrol #082728 sits at 10.7 : 1.
+   Two terracottas on purpose: the exact accent (#d9694a) is a mid tone,
+   so on cream it only clears the 3:1 bar for large shapes. Small text
+   and links use the darker #b04a2e, which measures 4.7:1 both as type
+   and behind cream type. Rule 7 of the brief allows exactly this.
+
+   Measured contrast:
+     text        #2b2d42 on #faf7f2   12.6 : 1  (AAA)
+     text-muted  #5c6078 on #faf7f2    5.4 : 1  (AA body copy)
+     accent      #d9694a on #faf7f2    3.0 : 1  (UI shapes only)
+     accent-ink  #b04a2e on #faf7f2    4.7 : 1  (AA small text)
+     accent-2-ink #566b52 on #faf7f2   5.0 : 1  (AA small text)
+     on-accent   #241f1c on #d9694a    4.7 : 1  (button text)
+     on-scrim    #faf7f2 on #22232f   14.6 : 1  (labels over media)
    ================================================================== */
 
 @theme inline {
@@ -22,42 +28,84 @@
 }
 
 @theme {
-  --color-brin: #05181a;
-  --color-brin-deep: #020f10;
-  --color-surface: #082728;
-  --color-raised: #0b4546;
-  --color-line: #1d5454;
-  --color-line-soft: #143a3b;
-  --color-menthe: #d2eae4;
-  --color-paper: #fdfdfd;
-  --color-muted: #8fb3ae;
-  --color-sable: #fecb9b;
-  --color-tan: #d8b08c;
-  --color-signal: #ff7a1a;
+  /* ---- Canonical palette ---- */
+  --color-bg: #faf7f2;
+  --color-bg-alt: #f0eae0;
+  --color-surface: #f3ede4;
+  --color-raised: #e9e0d1;
+  --color-text: #2b2d42;
+  --color-text-muted: #5c6078;
+  --color-accent: #d9694a;
+  --color-accent-hover: #c45a3d;
+  --color-accent-ink: #b04a2e;
+  --color-accent-2: #8fa68e;
+  --color-accent-2-ink: #566b52;
+  --color-on-accent: #241f1c;
+  --color-border: #e3dacb;
+  --color-border-soft: #ede5d8;
+  --color-scrim: #22232f;
+  --color-on-scrim: #faf7f2;
+  --color-focus: #b04a2e;
+
+  /* ---- Legacy names, kept as aliases so the existing markup (and the
+     hand-written CSS / SVG below) keeps resolving to the new palette. ---- */
+  --color-brin: var(--color-bg);
+  --color-brin-deep: var(--color-scrim);
+  --color-line: var(--color-border);
+  --color-line-soft: var(--color-border-soft);
+  --color-menthe: var(--color-text);
+  --color-paper: var(--color-text);
+  --color-muted: var(--color-text-muted);
+  --color-sable: var(--color-accent-ink);
+  --color-tan: var(--color-accent-2);
+  --color-signal: var(--color-focus);
 
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
   /* Mirrors of the theme block, for hand-written CSS and SVG attributes. */
-  --brin: #05181a;
-  --brin-deep: #020f10;
-  --surface: #082728;
-  --raised: #0b4546;
-  --line: #1d5454;
-  --line-soft: #143a3b;
-  --menthe: #d2eae4;
-  --paper: #fdfdfd;
-  --muted: #8fb3ae;
-  --sable: #fecb9b;
-  --tan: #d8b08c;
-  --signal: #ff7a1a;
+  --bg: #faf7f2;
+  --bg-alt: #f0eae0;
+  --surface: #f3ede4;
+  --raised: #e9e0d1;
+  --text: #2b2d42;
+  --text-muted: #5c6078;
+  --accent: #d9694a;
+  --accent-hover: #c45a3d;
+  --accent-ink: #b04a2e;
+  --accent-2: #8fa68e;
+  --accent-2-ink: #566b52;
+  --on-accent: #241f1c;
+  --border: #e3dacb;
+  --border-soft: #ede5d8;
+  --scrim: #22232f;
+  --on-scrim: #faf7f2;
+  --focus: #b04a2e;
+
+  /* Line-art strokes for the technical drawings. A UI hairline (#e3dacb) is
+     too close to the cream plate to read, so the SVG uses its own slightly
+     darker warm greys. Decorative only, so no text-contrast floor applies. */
+  --line-art: #a49b8d;
+  --line-art-soft: #c7bdad;
+
+  /* Legacy mirrors used by the hand-written CSS and the SVG attributes. */
+  --brin: var(--bg);
+  --brin-deep: var(--scrim);
+  --line: var(--border);
+  --line-soft: var(--border-soft);
+  --menthe: var(--text);
+  --paper: var(--text);
+  --muted: var(--text-muted);
+  --sable: var(--accent-ink);
+  --tan: var(--accent-2);
+  --signal: var(--focus);
 
   --header-h: 4.25rem;
   --measure: 68rem;
   --gutter: clamp(1.25rem, 5vw, 4rem);
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 /* ------------------------------------------------------------------ */
@@ -84,8 +132,8 @@ body {
   overflow-x: hidden;
 }
 
-/* Film grain: 3% opacity, fixed, behind everything. Keeps the large dark
-   fields from reading as flat digital black. */
+/* Film grain: 3% opacity, fixed, behind everything. Keeps the large cream
+   fields from reading as flat digital paper. */
 body::before {
   content: '';
   position: fixed;
@@ -101,16 +149,18 @@ body::before {
   color: var(--brin);
 }
 
-/* One focus treatment for the whole site: functional orange, 2px, with a
-   petrol offset so it stays visible on sand panels and raised surfaces. */
+/* One focus treatment for the whole site: deep terracotta, 2px. It measures
+   ~4.7:1 on both cream and sable clair, so the same ring works on either
+   substrate. */
 :focus-visible {
   outline: 2px solid var(--signal);
   outline-offset: 3px;
   border-radius: 2px;
 }
-/* On the sand panel, orange on sand is only ~1.9:1 — invert to petrol. */
+/* On the sable-clair panel the ring keeps enough contrast, so the only
+   tweak is to switch to the ink for a touch more weight. */
 .focus-sand:focus-visible {
-  outline-color: var(--brin);
+  outline-color: var(--text);
 }
 
 .skip-link {
@@ -163,23 +213,19 @@ body::before {
   font-family: var(--font-jetbrains), ui-monospace, monospace;
 }
 
-/* The single light panel of the page.
+/* The sable-clair panel of the page: the second plane under the cream.
  *
- * This rule is load-bearing, not decoration. Every `.on-sand` text colour
- * below is dark-on-light, chosen against a sand field. Painting the sand here
- * is what makes the panel light at all: with only the `on-sand` class on the
- * <section> and no background, the section inherited the petrol body colour
- * and every one of those dark text colours became invisible on dark.
- *
- * `--tan` at the bottom is the darkest stop, so it is the worst case any
- * text sitting on this panel has to pass. */
+ * It is painted here rather than inherited so the panel owns its ground.
+ * Default type colours (blue ink on sable clair) already clear AA, so the
+ * only rules this class still needs are the panel's own surface and the
+ * cards that sit on it, both below. */
 .on-sand {
-  background-color: var(--sable);
+  background-color: var(--bg-alt);
   background-image: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--sable) 94%, #fff) 0%,
-    var(--sable) 42%,
-    var(--tan) 100%
+    color-mix(in srgb, var(--bg) 55%, var(--bg-alt)) 0%,
+    var(--bg-alt) 55%,
+    color-mix(in srgb, var(--bg-alt) 90%, var(--accent-2)) 100%
   );
 }
 
@@ -191,46 +237,24 @@ body::before {
   text-transform: uppercase;
   color: var(--sable);
 }
-/* On the sand panel the eyebrow inverts. */
-.on-sand .eyebrow {
-  color: #7a4f22;
-}
+/* On the sable-clair panel the default deep terracotta already passes, so the
+   eyebrow keeps the same accent as everywhere else. */
 
-/* ---- Sand-panel overrides -------------------------------------------
- * Every rule here exists for one reason: the default value is light-on-dark,
- * and the sand panel is light. Each was measured against the panel's darkest
- * gradient stop (--tan, ~#d8b08c) rather than assumed to be fine.
- */
-.on-sand .h-section {
-  color: #3a2410;
-}
-
-/* The decorative section index dims through opacity. On dark that reads as a
-   softer tint; on sand it drags an already-thin brown under 4.5:1, so the
-   dimming is undone and the colour carries the hierarchy instead. */
-/* The decorative index dims through opacity. 0.6 was too far on the dark
-   panels too: --tan at 60% measures ~3.8:1 on petrol, under the 4.5 floor. */
+/* The decorative section index used to dim through opacity for hierarchy.
+   0.6 (and later 0.82) dropped the small accent below 4.5:1 once the ground
+   turned cream, so the dimming is gone and the colour carries the hierarchy
+   instead. */
 .index-mark {
-  opacity: 0.82;
-}
-.on-sand .index-mark {
   opacity: 1;
 }
 
-/* Duel chart row labels: the one piece of light-on-dark text inside the panel.
-   Class pairs instead of a tone prop, so DuelChart stays usable on either
-   substrate. */
+/* Duel chart row labels: label pairs, so DuelChart stays usable on either
+   substrate. Both read correctly on cream and on sable clair. */
 .duel-label {
   color: var(--muted);
 }
 .duel-label-after {
   color: var(--sable);
-}
-.on-sand .duel-label {
-  color: #5c4a33;
-}
-.on-sand .duel-label-after {
-  color: #8a4415;
 }
 
 .h-section {
@@ -246,9 +270,6 @@ body::before {
   font-size: 1.0625rem;
   line-height: 1.65;
   max-width: 46ch;
-}
-.on-sand .lead {
-  color: #4a3a29;
 }
 
 .body-copy {
@@ -297,7 +318,7 @@ body::before {
 .input-line {
   width: 100%;
   border: 1px solid var(--line-soft);
-  background: color-mix(in srgb, var(--brin-deep) 60%, transparent);
+  background: var(--bg);
   padding: 0.7rem 0.85rem;
   font-family: var(--font-sans), sans-serif;
   font-size: 0.95rem;
@@ -307,15 +328,15 @@ body::before {
     background 200ms var(--ease-out-soft);
 }
 .input-line::placeholder {
-  color: color-mix(in srgb, var(--muted) 60%, transparent);
+  color: color-mix(in srgb, var(--muted) 85%, transparent);
 }
 .input-line:hover {
   border-color: var(--line);
 }
 .input-line:focus {
   outline: none;
-  border-color: var(--tan);
-  background: var(--brin-deep);
+  border-color: var(--accent);
+  background: var(--bg);
 }
 .input-line:focus-visible {
   outline: 2px solid var(--signal);
@@ -338,7 +359,7 @@ body::before {
   border-top: 1px solid var(--line-soft);
 }
 
-/* Blueprint grid: the "engineering paper" substrate of every dark section. */
+/* Blueprint grid: the "engineering paper" substrate of every section. */
 .grid-paper {
   background-image:
     linear-gradient(to right, color-mix(in srgb, var(--line) 34%, transparent) 1px, transparent 1px),
@@ -348,25 +369,20 @@ body::before {
 
 .card {
   position: relative;
-  background: color-mix(in srgb, var(--surface) 86%, transparent);
-  border: 1px solid var(--line-soft);
-  backdrop-filter: blur(2px);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 .on-sand .card {
-  background: color-mix(in srgb, #fff 26%, transparent);
-  border-color: color-mix(in srgb, #082728 22%, transparent);
-  backdrop-filter: none;
+  background: var(--bg);
+  border-color: var(--border);
 }
 
-/* Sand card: the brass treatment. Two soft specular sweeps, no raster. */
+/* Primary action surface. The vivid terracotta only clears AA with dark ink
+   on it, which is why the fill is flat here and never gradient-shaded: a
+   darker stop would drop the label below 4.5:1. */
 .brass {
-  background-image: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--sable) 92%, #fff) 0%,
-    var(--sable) 38%,
-    var(--tan) 72%,
-    color-mix(in srgb, var(--sable) 88%, #fff) 100%
-  );
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 /* ------------------------------------------------------------------ */
@@ -491,16 +507,16 @@ body::before {
   }
   @keyframes node-lit {
     0% {
-      fill: var(--brin);
-      stroke: var(--line);
+      fill: var(--surface);
+      stroke: var(--line-art);
     }
     45% {
       fill: var(--sable);
       stroke: var(--sable);
     }
     100% {
-      fill: var(--brin);
-      stroke: var(--line);
+      fill: var(--surface);
+      stroke: var(--line-art);
     }
   }
 
@@ -816,7 +832,7 @@ body::before {
   .card.spot:focus-within {
     border-color: color-mix(in srgb, var(--tan) 45%, transparent);
     transform: translateY(-3px);
-    box-shadow: 0 22px 44px -30px rgba(0, 0, 0, 0.95);
+    box-shadow: 0 22px 44px -30px color-mix(in srgb, var(--text) 45%, transparent);
   }
 }
 /* Touch press: the card answers a tap with a small settle, which is the one
@@ -831,12 +847,12 @@ body::before {
   .card.spot {
     background-image: radial-gradient(
       260px circle at var(--mx, 50%) var(--my, 50%),
-      color-mix(in srgb, var(--spot-ink, var(--tan)) 14%, transparent),
+      color-mix(in srgb, var(--spot-ink, var(--accent)) 14%, transparent),
       transparent 72%
     );
   }
   .on-sand .card.spot {
-    --spot-ink: #b4762f;
+    --spot-ink: var(--accent-ink);
   }
   /* Same spotlight, driven by touch. The hover rule above cannot run on a
      touchscreen, so a tap sets data-spot-active on the card and the gradient
@@ -844,12 +860,12 @@ body::before {
   .card.spot[data-spot-active] {
     background-image: radial-gradient(
       260px circle at var(--mx, 50%) var(--my, 50%),
-      color-mix(in srgb, var(--spot-ink, var(--tan)) 14%, transparent),
+      color-mix(in srgb, var(--spot-ink, var(--accent)) 14%, transparent),
       transparent 72%
     );
   }
   .on-sand .card.spot[data-spot-active] {
-    --spot-ink: #b4762f;
+    --spot-ink: var(--accent-ink);
   }
   /* A single scan pass across the top edge: the one hover gesture every card
      on the site shares, so the interaction reads as a system. */
@@ -937,16 +953,16 @@ body::before {
   @keyframes ecu-node-hit {
     0%,
     20% {
-      fill: var(--brin-deep);
+      fill: var(--surface);
     }
     26% {
       fill: var(--sable);
     }
     40% {
-      fill: var(--brin-deep);
+      fill: var(--surface);
     }
     100% {
-      fill: var(--brin-deep);
+      fill: var(--surface);
     }
   }
 

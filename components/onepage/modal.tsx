@@ -136,7 +136,7 @@ export function Modal({
         tabIndex={-1}
         aria-hidden="true"
         onClick={onClose}
-        className="fixed inset-0 cursor-default bg-brin-deep/80 backdrop-blur-sm"
+        className="fixed inset-0 cursor-default bg-scrim/80 backdrop-blur-sm"
         style={{ animation: 'modal-veil 200ms ease-out both' }}
       />
       <div
@@ -145,7 +145,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative w-full border border-line bg-surface shadow-2xl shadow-brin-deep/60 ${
+        className={`relative w-full border border-line bg-surface shadow-2xl shadow-scrim/15 ${
           size === 'lg' ? 'max-w-4xl' : 'max-w-2xl'
         }`}
         style={{ animation: 'modal-in 260ms var(--ease-out-soft) both' }}

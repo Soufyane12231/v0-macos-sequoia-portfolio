@@ -193,7 +193,7 @@ export function Contact({ lang }: { lang: 'fr' | 'en' }) {
 
           <button
             type="submit"
-            className="brass mt-6 inline-flex w-full items-center justify-center gap-2.5 px-5 py-3.5 font-mono text-[0.72rem] tracking-[0.12em] text-brin uppercase transition-[filter] duration-200 hover:brightness-105 sm:w-auto"
+            className="brass mt-6 inline-flex w-full items-center justify-center gap-2.5 px-5 py-3.5 font-mono text-[0.72rem] tracking-[0.12em] text-on-accent uppercase transition-[filter] duration-200 hover:brightness-105 sm:w-auto"
           >
             {t(contact.form.send, lang)}
             <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
@@ -213,7 +213,7 @@ export function Contact({ lang }: { lang: 'fr' | 'en' }) {
           sees. The toast is aria-hidden, so nothing is announced twice. */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none fixed right-4 bottom-4 z-[70] border border-tan/60 bg-surface px-4 py-2.5 font-mono text-[0.68rem] tracking-[0.12em] text-sable uppercase shadow-lg shadow-brin-deep/60 ${
+        className={`pointer-events-none fixed right-4 bottom-4 z-[70] border border-tan/60 bg-surface px-4 py-2.5 font-mono text-[0.68rem] tracking-[0.12em] text-sable uppercase shadow-lg shadow-scrim/15 ${
           toast ? 'toast-in opacity-100' : 'opacity-0'
         }`}
       >

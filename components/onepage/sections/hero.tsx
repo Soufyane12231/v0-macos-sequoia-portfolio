@@ -62,7 +62,7 @@ export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette
       <div
         aria-hidden="true"
         className="glow-orb pointer-events-none absolute -top-40 -right-32 h-[34rem] w-[34rem] rounded-full opacity-[0.5]"
-        style={{ background: 'radial-gradient(circle, #0f4a4b 0%, transparent 68%)' }}
+        style={{ background: 'radial-gradient(circle, color-mix(in srgb, var(--color-accent) 30%, transparent) 0%, transparent 68%)' }}
       />
 
       {/* The portrait column carries the larger share: the face is the one
@@ -87,7 +87,7 @@ export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette
             <span aria-hidden="true" className="opacity-50">
               —
             </span>
-            <span className="text-tan">{t(hero.eyebrowPeriod, lang)}</span>
+            <span className="text-accent-2-ink">{t(hero.eyebrowPeriod, lang)}</span>
           </p>
 
           <div className="mt-7">
@@ -111,7 +111,7 @@ export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette
             <Magnetic strength={6}>
               <a
                 href="#contact"
-                className="brass inline-flex items-center gap-2.5 px-5 py-3 font-mono text-[0.72rem] tracking-[0.12em] text-brin uppercase transition-[filter] duration-200 hover:brightness-105"
+                className="brass inline-flex items-center gap-2.5 px-5 py-3 font-mono text-[0.72rem] tracking-[0.12em] text-on-accent uppercase transition-[filter] duration-200 hover:brightness-105"
               >
                 {t(hero.ctaSecondary, lang)}
                 <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
@@ -126,7 +126,7 @@ export function Hero({ lang, onOpenPalette }: { lang: 'fr' | 'en'; onOpenPalette
                 className="inline-flex items-center gap-2.5 border border-line px-5 py-3 font-mono text-[0.72rem] tracking-[0.12em] text-menthe uppercase transition-colors duration-200 hover:border-tan hover:text-sable"
               >
                 {t(hero.ctaNav, lang)}
-                <kbd className="border border-line px-1.5 py-0.5 text-[0.62rem] tracking-[0.06em] text-tan">Ctrl K</kbd>
+                <kbd className="border border-line px-1.5 py-0.5 text-[0.62rem] tracking-[0.06em] text-accent-2-ink">Ctrl K</kbd>
               </button>
             </Magnetic>
           </div>

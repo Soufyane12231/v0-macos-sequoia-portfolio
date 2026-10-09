@@ -51,11 +51,11 @@ function Duel({ lang }: { lang: 'fr' | 'en' }) {
   return (
     <div ref={ref}>
       <div className="flex items-baseline justify-between gap-4">
-        <h3 className="font-display text-base font-medium text-brin">{t(briefLabels.duelTitle, lang)}</h3>
+        <h3 className="font-display text-base font-medium text-text">{t(briefLabels.duelTitle, lang)}</h3>
         <button
           type="button"
           onClick={replay}
-          className="focus-sand mono shrink-0 border border-brin/25 px-2 py-1 text-[0.6rem] tracking-[0.14em] text-brin/70 uppercase transition-colors duration-200 hover:border-brin hover:text-brin"
+          className="focus-sand mono shrink-0 border border-text/25 px-2 py-1 text-[0.6rem] tracking-[0.14em] text-text/70 uppercase transition-colors duration-200 hover:border-text hover:text-text"
         >
           {playing ? t(briefLabels.duelReplaying, lang) : t(briefLabels.duelReplay, lang)}
         </button>
@@ -70,7 +70,7 @@ function Duel({ lang }: { lang: 'fr' | 'en' }) {
         />
       </div>
 
-      <p className="mono mt-4 text-[0.62rem] tracking-[0.1em] text-brin/75 uppercase">
+      <p className="mono mt-4 text-[0.62rem] tracking-[0.1em] text-text/75 uppercase">
         {t(briefLabels.duelBefore, lang)} — {t(briefLabels.duelBeforeValue, lang)}
       </p>
     </div>
@@ -105,12 +105,12 @@ function Figure({
       data-spot
       className="card spot flex flex-col p-5 sm:p-6"
     >
-      <p className="font-display text-[2.6rem] leading-none font-medium tracking-[-0.02em] text-brin">
+      <p className="font-display text-[2.6rem] leading-none font-medium tracking-[-0.02em] text-text">
         <span ref={ref}>{counted}</span>
-        <span className="ml-1 text-[1.15rem] tracking-normal text-brin/70">{unit}</span>
+        <span className="ml-1 text-[1.15rem] tracking-normal text-text/70">{unit}</span>
       </p>
-      <p className="mt-3 text-[0.9rem] leading-relaxed text-brin/80">{label}</p>
-      {children ? <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(8,39,40,0.18)' }}>{children}</div> : null}
+      <p className="mt-3 text-[0.9rem] leading-relaxed text-text/80">{label}</p>
+      {children ? <div className="mt-5 pt-5" style={{ borderTop: '1px solid color-mix(in srgb, var(--color-text) 18%, transparent)' }}>{children}</div> : null}
     </article>
   )
 }
@@ -158,11 +158,11 @@ export function EnBref({ lang }: { lang: 'fr' | 'en' }) {
           label={t(byId.ecus.label, lang)}
           delay={90}
         >
-          <h3 className="font-display text-sm font-medium text-brin">{t(briefLabels.busTitle, lang)}</h3>
+          <h3 className="font-display text-sm font-medium text-text">{t(briefLabels.busTitle, lang)}</h3>
           <div className="mt-3">
             <EcuBus running={running} />
           </div>
-          <p className="mt-2 text-[0.8rem] leading-relaxed text-brin/65">{t(briefLabels.busCaption, lang)}</p>
+          <p className="mt-2 text-[0.8rem] leading-relaxed text-text/75">{t(briefLabels.busCaption, lang)}</p>
         </Figure>
 
         <Figure
@@ -172,11 +172,11 @@ export function EnBref({ lang }: { lang: 'fr' | 'en' }) {
           label={t(byId.students.label, lang)}
           delay={180}
         >
-          <h3 className="font-display text-sm font-medium text-brin">{t(briefLabels.gridTitle, lang)}</h3>
+          <h3 className="font-display text-sm font-medium text-text">{t(briefLabels.gridTitle, lang)}</h3>
           <div className="mt-3">
             <DotGrid running={running} />
           </div>
-          <p className="mt-2 text-[0.8rem] leading-relaxed text-brin/65">{t(briefLabels.gridCaption, lang)}</p>
+          <p className="mt-2 text-[0.8rem] leading-relaxed text-text/75">{t(briefLabels.gridCaption, lang)}</p>
         </Figure>
 
         <Figure
@@ -186,16 +186,16 @@ export function EnBref({ lang }: { lang: 'fr' | 'en' }) {
           label={t(byId.stages.label, lang)}
           delay={270}
         >
-          <h3 className="font-display text-sm font-medium text-brin">{t(briefLabels.milestonesTitle, lang)}</h3>
+          <h3 className="font-display text-sm font-medium text-text">{t(briefLabels.milestonesTitle, lang)}</h3>
           <ol className="mt-4 space-y-3">
             {briefLabels.milestones.map((m, index) => (
               <li key={m.id} className="flex items-baseline gap-3" data-reveal="left" style={{ '--reveal-delay': `${340 + index * 110}ms` } as React.CSSProperties}>
-                <span className="mono text-[0.6rem] tracking-[0.14em] text-brin/75">
+                <span className="mono text-[0.6rem] tracking-[0.14em] text-text/75">
                   {String(index + 1).padStart(2, '0')}{' '}
                 </span>
-                <span className="text-[0.9rem] text-brin/85">{t(m.label, lang)}</span>
-                <span aria-hidden="true" className="h-px flex-1 translate-y-[-3px] bg-brin/15" />
-                <span className="mono text-[0.65rem] tracking-[0.08em] whitespace-nowrap text-brin/75">{t(m.period, lang)}</span>
+                <span className="text-[0.9rem] text-text/85">{t(m.label, lang)}</span>
+                <span aria-hidden="true" className="h-px flex-1 translate-y-[-3px] bg-text/15" />
+                <span className="mono text-[0.65rem] tracking-[0.08em] whitespace-nowrap text-text/75">{t(m.period, lang)}</span>
               </li>
             ))}
           </ol>

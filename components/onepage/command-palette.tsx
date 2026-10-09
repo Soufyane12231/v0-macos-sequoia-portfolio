@@ -165,7 +165,7 @@ export function CommandPalette({
             placeholder={t(ui.palette.hint, lang)}
             autoComplete="off"
             spellCheck={false}
-            className="w-full border border-line bg-brin-deep py-3 pr-3 pl-10 font-mono text-sm text-menthe placeholder:text-muted/70 focus:border-tan focus:outline-none"
+            className="w-full border border-line bg-bg py-3 pr-3 pl-10 font-mono text-sm text-menthe placeholder:text-muted focus:border-accent focus:outline-none"
           />
         </div>
 

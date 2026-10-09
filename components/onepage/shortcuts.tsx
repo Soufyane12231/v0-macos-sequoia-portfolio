@@ -44,7 +44,7 @@ export function ShortcutsDialog({
               {row.keys.map((key) => (
                 <kbd
                   key={key}
-                  className="mono min-w-7 border border-line bg-brin-deep px-1.5 py-1 text-center text-[0.68rem] tracking-[0.06em] text-sable"
+                  className="mono min-w-7 border border-line bg-bg px-1.5 py-1 text-center text-[0.68rem] tracking-[0.06em] text-sable"
                 >
                   {key}
                 </kbd>

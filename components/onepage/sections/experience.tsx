@@ -19,7 +19,7 @@ import { Section } from '../section'
 
 function PeriodTag({ text }: { text: string }) {
   return (
-    <span className="mono shrink-0 border border-line px-2 py-1 text-[0.62rem] tracking-[0.1em] whitespace-nowrap text-tan uppercase">
+    <span className="mono shrink-0 border border-line px-2 py-1 text-[0.62rem] tracking-[0.1em] whitespace-nowrap text-accent-2-ink uppercase">
       {text}
     </span>
   )
@@ -149,7 +149,7 @@ export function Experience({ lang }: { lang: 'fr' | 'en' }) {
                   <p className="mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
                     {t(ui.details, lang)}
                   </p>
-                  <p className="mono text-[0.6rem] tracking-[0.1em] text-tan uppercase">
+                  <p className="mono text-[0.6rem] tracking-[0.1em] text-accent-2-ink uppercase">
                     TIA / PLC
                   </p>
                 </div>

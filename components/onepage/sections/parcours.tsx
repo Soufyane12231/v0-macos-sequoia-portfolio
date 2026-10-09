@@ -26,7 +26,7 @@ function Column({
       {/* The index carries a trailing space on purpose: whitespace inside a flex
           container makes no visual box, but it stops a crawler reading the
           heading as "01Formation". */}
-      <h3 className="mono flex items-center gap-3 text-[0.65rem] tracking-[0.18em] text-tan uppercase">
+      <h3 className="mono flex items-center gap-3 text-[0.65rem] tracking-[0.18em] text-accent-2-ink uppercase">
         <span className="index-mark">{index} </span>
         <span aria-hidden="true" className="inline-block h-px w-6 bg-current opacity-50" />
         <span>{title}</span>
@@ -87,7 +87,7 @@ export function Parcours({ lang }: { lang: 'fr' | 'en' }) {
                 className="group flex items-center justify-between gap-4 border-b border-line-soft pb-3 transition-colors duration-300 hover:border-tan"
               >
                 <span className="font-display text-[0.95rem] text-paper">{t(language.name, lang)}</span>
-                <span className="mono text-[0.65rem] tracking-[0.1em] text-tan uppercase">
+                <span className="mono text-[0.65rem] tracking-[0.1em] text-accent-2-ink uppercase">
                   {t(language.level, lang)}
                 </span>
               </li>
